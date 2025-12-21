@@ -1,0 +1,233 @@
+.about-section {
+    padding: 100px 2rem;
+    background: #fff;
+}
+
+.about-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.about-content {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 5rem;
+    align-items: center;
+}
+
+.about-text .section-title {
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    font-weight: 800;
+    color: #000;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.03em;
+}
+
+.about-intro {
+    font-size: 1.2rem;
+    line-height: 1.7;
+    color: #666;
+    margin-bottom: 3rem;
+}
+
+.about-features {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.about-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+}
+
+.about-feature svg {
+    color: #000;
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+}
+
+.about-feature h4 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 0.5rem;
+}
+
+.about-feature p {
+    font-size: 1rem;
+    color: #666;
+    line-height: 1.6;
+}
+
+.about-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.about-stat-card {
+    background: #fafafa;
+    padding: 2.5rem 2rem;
+    border-radius: 20px;
+    text-align: center;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.about-stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.stat-value {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #000;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 1rem;
+    color: #666;
+    font-weight: 600;
+}
+
+@media (max-width: 968px) {
+    .about-section {
+        padding: 80px 1.5rem;
+        background: #fafafa;
+        /* Subtle background to separate from white Hero/Services if needed */
+    }
+
+    .about-content {
+        grid-template-columns: 1fr;
+        gap: 5rem;
+    }
+
+    .about-text .section-title {
+        font-size: 2.6rem;
+        text-align: center;
+        margin-bottom: 1.25rem;
+        letter-spacing: -0.04em;
+    }
+
+    .about-intro {
+        font-size: 1.15rem;
+        text-align: center;
+        margin-bottom: 4rem;
+        line-height: 1.6;
+        color: #555;
+        max-width: 340px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .about-features {
+        gap: 1.5rem;
+    }
+
+    .about-feature {
+        background: #fff;
+        padding: 2.5rem 1.5rem;
+        border-radius: 28px;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1.5rem;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        opacity: 0;
+        animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .about-feature:nth-child(2) {
+        animation-delay: 0.15s;
+    }
+
+    .about-feature:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .about-feature:active {
+        transform: scale(0.98);
+        background: #fafafa;
+    }
+
+    .about-feature svg {
+        margin-top: 0;
+        width: 64px;
+        height: 64px;
+        padding: 18px;
+        background: linear-gradient(135deg, #000 0%, #333 100%);
+        color: #fff;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        box-sizing: border-box;
+        /* Ensure padding doesn't shrink the icon too much */
+    }
+
+    .about-feature h4 {
+        font-size: 1.4rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.02em;
+    }
+
+    .about-feature p {
+        font-size: 1.05rem;
+        color: #777;
+        line-height: 1.5;
+    }
+
+    .about-stats {
+        order: -1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .about-stat-card {
+        padding: 2.25rem 1rem;
+        border-radius: 28px;
+        background: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 25px rgba(0, 0, 0, 0.03);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .about-stat-card:last-child {
+        grid-column: span 2;
+        background: #000;
+        color: #fff;
+    }
+
+    .about-stat-card:last-child .stat-value {
+        color: #fff;
+    }
+
+    .about-stat-card:last-child .stat-label {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .stat-value {
+        font-size: 2.4rem;
+        font-weight: 900;
+        margin-bottom: 0.25rem;
+        color: #000;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #888;
+    }
+}

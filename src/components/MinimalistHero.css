@@ -1,0 +1,304 @@
+.mini-hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 120px 2rem 80px;
+    position: relative;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+.hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.blur-circle {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+}
+
+.circle-1 {
+    width: 500px;
+    height: 500px;
+    background: #6366f1;
+    top: -100px;
+    right: -100px;
+}
+
+.circle-2 {
+    width: 400px;
+    height: 400px;
+    background: #ec4899;
+    bottom: -50px;
+    left: -50px;
+}
+
+.hero-content {
+    max-width: 900px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 0.5rem 1.25rem;
+    border-radius: 100px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 2.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.hero-title {
+    font-size: clamp(3rem, 8vw, 5rem);
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: #000;
+    margin-bottom: 1.5rem;
+}
+
+.hero-title span {
+    background: linear-gradient(90deg, #000, #444);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: #666;
+    max-width: 650px;
+    margin: 0 auto 3rem;
+    line-height: 1.6;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 5rem;
+}
+
+.btn-hero-primary {
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 1.25rem 2.5rem;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.btn-hero-primary:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    background: #222;
+}
+
+.btn-hero-secondary {
+    background: transparent;
+    color: #000;
+    border: 2px solid #eee;
+    padding: 1.125rem 2.5rem;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-hero-secondary:hover {
+    border-color: #000;
+    background: rgba(0, 0, 0, 0.02);
+}
+
+/* Stats Section */
+.hero-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #000;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #000 0%, #444 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 600;
+}
+
+/* Animations */
+.animate-fade-in {
+    animation: fadeIn 1s ease-out forwards;
+}
+
+.animate-title {
+    animation: slideUpFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in-up {
+    opacity: 0;
+    animation: slideUpFade 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .mini-hero {
+        padding: 120px 1.5rem 60px;
+        /* More top padding for breathing room */
+        min-height: auto;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        padding: 0.6rem 1.25rem;
+        margin-bottom: 2rem;
+        letter-spacing: 0.02em;
+    }
+
+    .hero-title {
+        font-size: clamp(2.4rem, 11vw, 3.4rem);
+        margin-bottom: 1.75rem;
+        line-height: 1.05;
+    }
+
+    .hero-subtitle {
+        font-size: 1.1rem;
+        margin-bottom: 3.5rem;
+        line-height: 1.6;
+        color: #555;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 1.25rem;
+        margin-bottom: 5rem;
+    }
+
+    .btn-hero-primary,
+    .btn-hero-secondary {
+        width: 100%;
+        justify-content: center;
+        padding: 1.25rem 2rem;
+        font-size: 1.1rem;
+        height: 60px;
+        /* Slightly larger for premium feel */
+    }
+
+    .btn-hero-primary {
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .hero-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        padding: 3rem 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        max-width: 100%;
+    }
+
+    .stat-item {
+        background: #fafafa;
+        padding: 1.5rem 1rem;
+        border-radius: 20px;
+        border: 1px solid rgba(0, 0, 0, 0.03);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.3s ease;
+    }
+
+    .stat-item:last-child {
+        grid-column: span 2;
+        padding: 1.75rem 1rem;
+        background: #000;
+    }
+
+    .stat-item:last-child .stat-number {
+        background: #fff;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .stat-item:last-child .stat-label {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .stat-number {
+        font-size: 2.2rem;
+        font-weight: 900;
+        margin-bottom: 0.15rem;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: #777;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 700;
+    }
+}

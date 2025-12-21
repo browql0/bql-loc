@@ -1,0 +1,201 @@
+.services-section {
+    padding: 100px 2rem;
+    background: #fafafa;
+}
+
+.services-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.services-header {
+    text-align: center;
+    margin-bottom: 70px;
+}
+
+.section-title {
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    font-weight: 800;
+    color: #000;
+    margin-bottom: 1rem;
+    letter-spacing: -0.03em;
+}
+
+.section-subtitle {
+    font-size: 1.25rem;
+    color: #666;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2.5rem;
+}
+
+.service-card {
+    background: #fff;
+    padding: 3rem 2rem;
+    border-radius: 24px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    text-align: center;
+}
+
+.service-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+.service-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 2rem;
+    background: linear-gradient(135deg, #000 0%, #333 100%);
+    color: #fff;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.service-card:hover .service-icon {
+    transform: rotate(-5deg) scale(1.1);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+.service-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #000;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+}
+
+.service-description {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #666;
+}
+
+@media (max-width: 768px) {
+    .services-section {
+        padding: 80px 1.5rem;
+        background: #fff;
+        /* Clean white for better contrast */
+    }
+
+    .section-title {
+        font-size: 2.6rem;
+        text-align: center;
+        margin-bottom: 1rem;
+        letter-spacing: -0.04em;
+    }
+
+    .section-subtitle {
+        font-size: 1.15rem;
+        text-align: center;
+        margin-bottom: 4rem;
+        max-width: 320px;
+        margin-left: auto;
+        margin-right: auto;
+        color: #666;
+    }
+
+    .services-header {
+        margin-bottom: 40px;
+    }
+
+    .services-grid {
+        display: flex;
+        flex-direction: column;
+        /* Stacked but flexible */
+        gap: 1.25rem;
+    }
+
+    .service-card {
+        padding: 2.5rem 2rem;
+        background: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 32px;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Active state for better mobile touch feedback */
+    .service-card:active {
+        transform: scale(0.97);
+        background: #fafafa;
+        border-color: rgba(0, 0, 0, 0.1);
+    }
+
+    .service-icon {
+        width: 68px;
+        height: 68px;
+        margin: 0 0 2rem;
+        background: linear-gradient(135deg, #000 0%, #333 100%);
+        color: #fff;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 2;
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Subtle background number/decoration */
+    .service-card::after {
+        content: '';
+        position: absolute;
+        top: -10%;
+        right: -5%;
+        width: 120px;
+        height: 120px;
+        background: radial-gradient(circle, rgba(0, 0, 0, 0.02) 0%, transparent 70%);
+        z-index: 0;
+    }
+
+    .service-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        margin-bottom: 0.85rem;
+        letter-spacing: -0.02em;
+        position: relative;
+        z-index: 2;
+    }
+
+    .service-description {
+        font-size: 1.05rem;
+        line-height: 1.6;
+        color: #666;
+        position: relative;
+        z-index: 2;
+    }
+
+    /* Ensure animations are triggered */
+    .animate-fade-in-up {
+        opacity: 0;
+        animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+}
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

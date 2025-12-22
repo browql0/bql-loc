@@ -7,7 +7,8 @@
     background-color: #fff;
     font-family: 'Inter', sans-serif;
     position: relative;
-    overflow: hidden;
+    overflow-y: auto;
+    /* Allow scrolling */
     padding: 2rem;
 }
 
@@ -91,12 +92,63 @@
 @keyframes portalReveal {
     from {
         opacity: 0;
-        transform: translateY(60px) scale(0.97);
+        transform: translateY(10px);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateY(0);
+    }
+}
+
+/* Page Transition Animations */
+.ultimate-card.exit-to-right {
+    opacity: 0 !important;
+    transform: translateX(60px) scale(0.95) !important;
+    filter: blur(10px);
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.ultimate-card.exit-to-left {
+    opacity: 0 !important;
+    transform: translateX(-60px) scale(0.95) !important;
+    filter: blur(10px);
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.ultimate-card.enter-from-right {
+    animation: enterFromRight 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.ultimate-card.enter-from-left {
+    animation: enterFromLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes enterFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(60px) scale(0.95);
+        filter: blur(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+@keyframes enterFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-60px) scale(0.95);
+        filter: blur(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+        filter: blur(0);
     }
 }
 
@@ -143,14 +195,58 @@
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.05);
     padding: 0.5rem 1rem;
     border-radius: 100px;
     font-size: 0.65rem;
     font-weight: 800;
     margin-bottom: 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     letter-spacing: 0.1em;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    animation: simpleGlow 3s ease-in-out infinite;
+}
+
+@keyframes simpleGlow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    50% {
+        box-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.18);
+    }
+}
+
+.v-tag svg {
+    animation: zapFlicker 1.5s ease-in-out infinite;
+}
+
+@keyframes zapFlicker {
+
+    0%,
+    100% {
+        opacity: 0.9;
+        filter: brightness(1);
+    }
+
+    25% {
+        opacity: 1;
+        filter: brightness(1.3) drop-shadow(0 0 4px rgba(255, 255, 255, 0.5));
+    }
+
+    30% {
+        opacity: 0.85;
+        filter: brightness(0.9);
+    }
+
+    35% {
+        opacity: 1;
+        filter: brightness(1.4) drop-shadow(0 0 6px rgba(255, 255, 255, 0.6));
+    }
 }
 
 .v-main-title {
@@ -335,7 +431,7 @@
     position: absolute;
     inset: -2px;
     border-radius: 22px;
-    background: linear-gradient(135deg, #6366f1, #ec4899);
+    background: linear-gradient(135deg, #000, #333);
     opacity: 0;
     transition: all 0.5s ease;
     z-index: 1;
@@ -474,113 +570,111 @@
 
 /* Responsive High-Fi */
 @media (max-width: 1024px) {
+    .register-page-v74 {
+        padding: 0 !important;
+        /* Remove padding to eliminate white gap at top */
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        /* Crucial for mobile scroll to start at 0 */
+        justify-content: flex-start !important;
+        /* Force content to start at absolute top */
+        height: auto !important;
+        min-height: 100vh !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        /* Force scroll visibility on mobile */
+    }
+
     .layout-portal {
-        height: auto;
-        padding: 0;
-        max-height: none;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: auto !important;
+        /* Allow content to define height */
+        max-height: none !important;
+        /* Remove desktop constraints */
+        display: flex !important;
+        align-items: flex-start !important;
+        /* Ensure top isn't clipped */
     }
 
     .ultimate-card {
-        grid-template-columns: 1fr;
-        border-radius: 0;
-        border: none;
-        box-shadow: none;
+        display: block !important;
+        /* Change grid to block for standard flow */
+        width: 100% !important;
+        border-radius: 0 !important;
+        height: auto !important;
+        border: none !important;
+        box-shadow: none !important;
     }
 
     .vault-side {
-        padding: 4rem 2rem 3rem;
-        min-height: 100vh;
+        padding: 4rem 2rem 3rem !important;
+        min-height: auto !important;
         justify-content: center;
+        text-align: center;
+        align-items: center;
     }
 
     .studio-side {
-        padding: 4rem 2rem;
-        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 4rem 1.5rem 6rem !important;
         background: #fff;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
     }
 
     .v-main-title {
-        font-size: 2.8rem;
+        font-size: 2.6rem !important;
     }
 
     .v-description {
-        margin-bottom: 3rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .register-page-v74 {
-        padding: 0;
-        background: #fff;
+        margin: 0 auto 2.5rem !important;
     }
 
-    .vault-side {
-        padding: 3.5rem 1.5rem 3rem;
+    .v-perk-list {
+        align-items: center;
+        text-align: left;
+        max-width: 340px;
+        margin: 0 auto;
     }
 
     .portal-logo {
         justify-content: center;
-    }
-
-    .vault-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-
-    .v-description {
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .v-perk-list {
-        align-items: flex-start;
-        text-align: left;
-    }
-
-    .studio-side {
-        padding: 3rem 1.5rem 5rem;
-    }
-
-    .v-main-title {
-        font-size: 2.4rem;
-        margin-bottom: 1.2rem;
-    }
-
-    .f-main-title {
-        font-size: 1.8rem;
-    }
-
-    .s-input-wrap input {
-        padding: 1rem 1.2rem 1rem 3.4rem;
-        font-size: 1rem;
-    }
-
-    .s-submit-btn {
-        padding: 1.1rem;
-        font-size: 0.95rem;
-    }
-
-    .s-close-btn {
-        top: 1.5rem;
-        right: 1.5rem;
-        width: 40px;
-        height: 40px;
-    }
-
-    .vault-header {
-        margin-bottom: 2.5rem;
-        width: 100%;
+        margin-bottom: 2rem;
     }
 
     .v-tag {
-        margin-bottom: 1.5rem;
+        margin: 0 auto 1.5rem;
     }
 
     .v-exit {
         margin-top: 2.5rem;
         width: 100%;
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: auto;
         justify-content: center;
+    }
+
+    .s-close-btn {
+        top: 1.5rem !important;
+        right: 1.5rem !important;
+        width: 40px !important;
+        height: 40px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .v-main-title {
+        font-size: 2rem !important;
+    }
+
+    .f-main-title {
+        font-size: 1.8rem !important;
+    }
+
+    .s-input-wrap input {
+        padding: 1rem 1.2rem 1rem 3.2rem !important;
     }
 }

@@ -1,0 +1,312 @@
+/* Login Page - Premium refinements (No Social Auth) */
+@import "./Register.css";
+
+.login-portal-ui {
+    background-color: #fff;
+    transition: background-color 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow-y: auto;
+    /* Allow scrolling */
+}
+
+.login-portal-ui.mode-dark {
+    background-color: #050505;
+}
+
+/* Power Switching Animation (Lightning effect) */
+.is-power-switching::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    animation: flash-burst 0.6s ease-out;
+}
+
+.login-portal-ui.mode-dark.is-power-switching::before {
+    background: #4f46e5;
+}
+
+@keyframes flash-burst {
+    0% {
+        opacity: 0;
+        transform: scale(1);
+    }
+
+    10% {
+        opacity: 0.8;
+        transform: scale(1.02);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(1);
+    }
+}
+
+/* Card Theme Transitions */
+.ultimate-card {
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ultimate-card.theme-dark {
+    background: #000;
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 40px 120px rgba(0, 0, 0, 0.8);
+}
+
+.ultimate-card.theme-dark .studio-side {
+    background: #0a0a0a;
+}
+
+.ultimate-card.theme-dark .f-main-title,
+.ultimate-card.theme-dark .f-main-subtitle,
+.ultimate-card.theme-dark .s-field-group label,
+.ultimate-card.theme-dark .studio-footer,
+.ultimate-card.theme-dark .studio-footer a,
+.ultimate-card.theme-dark .f-forgot,
+.ultimate-card.theme-dark .s-checkbox-label {
+    color: #fff;
+}
+
+.ultimate-card.theme-dark .f-main-subtitle,
+.ultimate-card.theme-dark .s-field-group label,
+.ultimate-card.theme-dark .studio-footer,
+.ultimate-card.theme-dark .s-checkbox-label {
+    opacity: 0.6;
+}
+
+.ultimate-card.theme-dark .s-input-wrap input {
+    background: #111;
+    border-color: #222;
+    color: #fff;
+}
+
+.ultimate-card.theme-dark .s-icon {
+    color: #444;
+}
+
+.ultimate-card.theme-dark .s-submit-btn {
+    background: #fff;
+    color: #000;
+}
+
+.ultimate-card.theme-dark .s-submit-btn:hover {
+    background: #eee;
+    transform: translateY(-2px);
+}
+
+.ultimate-card.theme-dark .s-close-btn {
+    background: #111;
+    border-color: #222;
+    color: #555;
+}
+
+.ultimate-card.theme-dark .s-close-btn:hover {
+    color: #fff;
+    border-color: #fff;
+}
+
+/* Checkbox Styling */
+.s-options-row {
+    margin-bottom: 2rem;
+}
+
+.s-checkbox-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.85rem;
+    user-select: none;
+    gap: 0.75rem;
+}
+
+.s-checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.s-checkmark {
+    height: 18px;
+    width: 18px;
+    background-color: #fff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 6px;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.s-checkbox-container:hover input~.s-checkmark {
+    border-color: #000;
+}
+
+.s-checkbox-container input:checked~.s-checkmark {
+    background-color: #000;
+    border-color: #000;
+}
+
+.theme-dark .s-checkbox-container input:checked~.s-checkmark {
+    background-color: #fff;
+    border-color: #fff;
+}
+
+.s-checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 5px;
+    top: 2px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.theme-dark .s-checkmark:after {
+    border-color: black;
+}
+
+.s-checkbox-container input:checked~.s-checkmark:after {
+    display: block;
+}
+
+.s-checkbox-label {
+    font-weight: 700;
+    color: #000;
+    transition: color 0.8s ease;
+}
+
+/* Specific UI Elements for Login */
+.label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.label-row label {
+    margin-bottom: 0 !important;
+}
+
+.f-forgot {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #000;
+    text-decoration: none;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+.f-forgot:hover {
+    opacity: 1;
+}
+
+/* Flicker effect for Zap icon */
+.flicker-zap {
+    animation: zap-flicker 1.5s infinite;
+    color: #4f46e5;
+}
+
+@keyframes zap-flicker {
+
+    0%,
+    100% {
+        opacity: 1;
+        filter: drop-shadow(0 0 5px rgba(79, 70, 229, 0.8));
+    }
+
+    50% {
+        opacity: 0.7;
+        filter: drop-shadow(0 0 2px rgba(79, 70, 229, 0.4));
+    }
+
+    55% {
+        opacity: 1;
+        filter: drop-shadow(0 0 8px rgba(79, 70, 229, 1));
+    }
+
+    60% {
+        opacity: 0.7;
+    }
+}
+
+/* Specific Fix for Mobile Spacing */
+@media (max-width: 1024px) {
+    .register-page-v74.login-portal-ui {
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        justify-content: flex-start !important;
+        /* Force start at top 0 */
+        height: auto !important;
+        min-height: 100vh !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        /* Force scroll on mobile */
+    }
+
+    .login-portal-ui .layout-portal {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+        min-height: auto !important;
+        max-height: none !important;
+        display: flex !important;
+        align-items: flex-start !important;
+    }
+
+    .login-portal-ui .ultimate-card {
+        display: block !important;
+        width: 100% !important;
+        border-radius: 0 !important;
+        height: auto !important;
+        border: none !important;
+    }
+
+    .login-portal-ui .vault-side {
+        padding: 4rem 2rem 3rem !important;
+        min-height: auto !important;
+        text-align: center;
+        align-items: center;
+    }
+
+    .login-portal-ui .v-main-title {
+        font-size: 2.4rem !important;
+    }
+
+    .login-portal-ui .v-description {
+        margin: 0 auto 2.5rem !important;
+    }
+
+    .login-portal-ui .v-perk-list {
+        align-items: center;
+        text-align: left;
+        max-width: 320px;
+        margin: 0 auto;
+    }
+
+    .login-portal-ui .studio-side {
+        padding: 4rem 1.5rem 6rem !important;
+        background: #fff;
+    }
+
+    .ultimate-card.theme-dark .studio-side {
+        background: #0a0a0a !important;
+    }
+
+    .login-portal-ui .s-close-btn {
+        top: 1.5rem !important;
+        right: 1.5rem !important;
+        width: 40px !important;
+        height: 40px !important;
+    }
+}

@@ -28,7 +28,7 @@ const Contact = () => {
                                     </div>
                                     <div className="method-text">
                                         <span>Email</span>
-                                        <a href="mailto:contact@bqlrent.com">contact@bqlrent.com</a>
+                                        <a href="mailto:contact@bqlrent.com">bqlrent@hotmail.com</a>
                                     </div>
                                 </div>
                                 <div className="method-item animate-fade-in-up" style={{ animationDelay: '0.2s' }}>

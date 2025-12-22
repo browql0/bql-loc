@@ -38,15 +38,15 @@ const MinimalistHero = () => {
 
                 <div className="hero-stats animate-fade-in-up">
                     <div className="stat-item">
-                        <div className="stat-number">500+</div>
+                        <div className="stat-number">10+</div>
                         <div className="stat-label">Agences partenaires</div>
                     </div>
                     <div className="stat-item">
-                        <div className="stat-number">50K+</div>
+                        <div className="stat-number">100+</div>
                         <div className="stat-label">Véhicules gérés</div>
                     </div>
                     <div className="stat-item">
-                        <div className="stat-number">98%</div>
+                        <div className="stat-number">99%</div>
                         <div className="stat-label">Satisfaction client</div>
                     </div>
                 </div>

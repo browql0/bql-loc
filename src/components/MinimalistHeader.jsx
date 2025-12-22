@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Command, Instagram, Twitter, Facebook } from 'lucide-react';
 import './MinimalistHeader.css';
 
 const MinimalistHeader = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -49,7 +51,7 @@ const MinimalistHeader = () => {
                 </nav>
 
                 <div className="header-actions">
-                    <button className="btn-primary desktop-only">Commencer</button>
+                    <button className="btn-primary desktop-only" onClick={() => navigate('/register')}>Commencer</button>
 
                     {/* Custom Burger Icon - Refined structure */}
                     <button
@@ -83,7 +85,7 @@ const MinimalistHeader = () => {
                     </nav>
 
                     <div className="mobile-menu-footer">
-                        <button className="btn-primary full-width">Commencer</button>
+                        <button className="btn-primary full-width" onClick={() => { navigate('/register'); setIsMenuOpen(false); }}>Commencer</button>
                         <div className="mobile-socials">
                             <Instagram size={22} />
                             <Twitter size={22} />

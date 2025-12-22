@@ -1,8 +1,11 @@
 import React from 'react';
-import { ArrowRight, Car, Zap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowRight, Zap } from 'lucide-react';
 import './MinimalistHero.css';
 
 const MinimalistHero = () => {
+    const navigate = useNavigate();
+
     return (
         <section className="mini-hero" id="home">
             <div className="hero-background">
@@ -27,7 +30,7 @@ const MinimalistHero = () => {
                 </p>
 
                 <div className="hero-actions animate-fade-in-up">
-                    <button className="btn-hero-primary">
+                    <button className="btn-hero-primary" onClick={() => navigate('/register')}>
                         Démarrer gratuitement <ArrowRight size={18} />
                     </button>
                     <button className="btn-hero-secondary">Voir la démo</button>

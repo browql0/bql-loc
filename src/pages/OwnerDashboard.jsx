@@ -42,7 +42,7 @@ const OwnerDashboard = () => {
     };
 
     return (
-        <div className="owner-dashboard">
+        <div className={`owner-dashboard ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
             {/* Sidebar */}
             <aside className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
                 <div className="sidebar-header">
@@ -90,9 +90,9 @@ const OwnerDashboard = () => {
             <main className="main-content">
                 <header className="content-header">
                     <div className="header-left">
-                        <button className="menu-toggle" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+                        {  /*  <button className="menu-toggle" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
                             <Menu size={24} />
-                        </button>
+                        </button>*/ }
                         <div className="header-title-container">
                             <h1>{getPageTitle()}</h1>
                             <div className="vertical-divider"></div>

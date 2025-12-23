@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { X, User, Mail, Phone, Shield, Calendar, Camera, Hash, Upload, ChevronRight, ChevronLeft, CheckCircle } from 'lucide-react';
+import PremiumSelect from './PremiumSelect';
 import './AddStaffModal.css';
 
 const EditStaffModal = ({ isOpen, onClose, staffData }) => {
@@ -135,16 +136,18 @@ const EditStaffModal = ({ isOpen, onClose, staffData }) => {
                                             <h4 className="section-title">Documents & Attribution</h4>
                                             <div className="form-row">
                                                 <div className="premium-input-group">
-                                                    <label>Rôle</label>
-                                                    <div className="premium-input-wrapper">
-                                                        <Shield size={18} />
-                                                        <select name="role" value={formData.role} onChange={handleInputChange}>
-                                                            <option value="">Sélectionner</option>
-                                                            <option value="Gestionnaire">Gestionnaire</option>
-                                                            <option value="Agent Accueil">Agent Accueil</option>
-                                                            <option value="Chauffeur">Chauffeur</option>
-                                                        </select>
-                                                    </div>
+                                                    <PremiumSelect
+                                                        label="Rôle"
+                                                        options={[
+                                                            { value: 'Gestionnaire', label: 'Gestionnaire' },
+                                                            { value: 'Agent Accueil', label: 'Agent Accueil' },
+                                                            { value: 'Chauffeur', label: 'Chauffeur' }
+                                                        ]}
+                                                        value={formData.role}
+                                                        onChange={handleInputChange}
+                                                        icon={Shield}
+                                                        placeholder="Sélectionner"
+                                                    />
                                                 </div>
                                                 <div className="premium-input-group">
                                                     <label>N° CIN</label>

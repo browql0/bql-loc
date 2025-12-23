@@ -16,7 +16,23 @@
     position: relative;
     overflow: hidden;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+
+    /* Variables for content centering */
+    --current-sidebar-width: var(--sidebar-width);
 }
+
+.owner-dashboard.sidebar-closed {
+    --current-sidebar-width: var(--sidebar-collapsed-width);
+}
+
+@media (max-width: 1024px) {
+
+    .owner-dashboard.sidebar-open,
+    .owner-dashboard.sidebar-closed {
+        --current-sidebar-width: 0px;
+    }
+}
+
 
 /* Sidebar Styling */
 /* Solid Sidebar */
@@ -151,7 +167,7 @@
     height: 100vh;
     overflow: hidden;
     position: relative;
-    z-index: 1;
+    /* Removed z-index: 1 to prevent stacking context issues with modals */
 }
 
 .content-header {
@@ -426,6 +442,26 @@
 .notif-list {
     max-height: 400px;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+}
+
+.notif-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.notif-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.notif-list::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.notif-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.1);
 }
 
 .notif-item {

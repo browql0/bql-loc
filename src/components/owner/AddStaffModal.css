@@ -6,13 +6,29 @@
     bottom: 0;
     background: rgba(0, 0, 0, 0.7);
     display: flex;
-    align-items: flex-start;
-    /* Shifted UP */
+    align-items: center;
     justify-content: center;
     z-index: 9999;
-    padding: 6vh 2vh;
-    /* Space from top */
+    padding: 2rem;
     overflow-y: auto;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Offset for sidebar to center in content area */
+.sidebar-open .modal-overlay {
+    padding-left: calc(var(--sidebar-width, 280px) + 2rem);
+}
+
+.sidebar-closed .modal-overlay {
+    padding-left: calc(var(--sidebar-collapsed-width, 80px) + 2rem);
+}
+
+@media (max-width: 1024px) {
+
+    .sidebar-open .modal-overlay,
+    .sidebar-closed .modal-overlay {
+        padding-left: 2rem;
+    }
 }
 
 .modal-content-premium {

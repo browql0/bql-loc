@@ -11,7 +11,7 @@ const About = () => {
                         <h2 className="section-title">À Propos de BQL Rent</h2>
                         <p className="about-intro">
                             Nous sommes la solution de gestion moderne conçue spécifiquement pour les agences de location de voiture.
-                            Notre mission est de simplifier vos opérations quotidiennes et d'accélérer votre croissance.
+                            Notre mission est de simplifier vos opérations et taches quotidiennes et d'accélérer votre croissance.
                         </p>
 
                         <div className="about-features">
@@ -41,11 +41,11 @@ const About = () => {
 
                     <div className="about-stats">
                         <div className="about-stat-card">
-                            <div className="stat-value">5+</div>
+                            <div className="stat-value">7+</div>
                             <div className="stat-label">Années d'expérience</div>
                         </div>
                         <div className="about-stat-card">
-                            <div className="stat-value">500+</div>
+                            <div className="stat-value">10+</div>
                             <div className="stat-label">Agences partenaires</div>
                         </div>
                         <div className="about-stat-card">

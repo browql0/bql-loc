@@ -17,7 +17,7 @@ const Services = () => {
         {
             icon: <Users size={32} />,
             title: "Gestion Client & Staff",
-            description: "Accédez instantanément aux informations de vos clients et de votre équipe. Tout centralisé, tout simplifié."
+            description: "Accédez instantanément aux informations et documents de vos clients et de votre équipe. Tout centralisé, tout simplifié."
         },
         {
             icon: <TrendingUp size={32} />,

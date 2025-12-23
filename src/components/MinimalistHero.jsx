@@ -33,7 +33,7 @@ const MinimalistHero = () => {
                     <button className="btn-hero-primary" onClick={() => navigate('/register')}>
                         Démarrer gratuitement <ArrowRight size={18} />
                     </button>
-                    <button className="btn-hero-secondary">Voir la démo</button>
+                    <button className="btn-hero-secondary" href="#contact">Contactez-nous</button>
                 </div>
 
                 <div className="hero-stats animate-fade-in-up">

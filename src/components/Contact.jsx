@@ -18,7 +18,7 @@ const Contact = () => {
                             <span className="contact-badge">Parlons ensemble</span>
                             <h2 className="visual-title">Prêt à transformer votre agence ?</h2>
                             <p className="visual-description">
-                                Rejoignez plus de 500 agences qui optimisent déjà leur rentabilité avec BQL Rent.
+                                Rejoignez plus de 10 agences qui optimisent déjà leur rentabilité avec BQL Rent.
                             </p>
 
                             <div className="contact-methods">

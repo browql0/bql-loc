@@ -5,9 +5,8 @@
     background-color: #fff;
     transition: background-color 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
-    overflow-y: auto;
-    /* Allow scrolling */
 }
+
 
 .login-portal-ui.mode-dark {
     background-color: #050505;
@@ -233,80 +232,5 @@
 
     60% {
         opacity: 0.7;
-    }
-}
-
-/* Specific Fix for Mobile Spacing */
-@media (max-width: 1024px) {
-    .register-page-v74.login-portal-ui {
-        padding: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        justify-content: flex-start !important;
-        /* Force start at top 0 */
-        height: auto !important;
-        min-height: 100vh !important;
-        overflow-x: hidden !important;
-        overflow-y: auto !important;
-        /* Force scroll on mobile */
-    }
-
-    .login-portal-ui .layout-portal {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        height: auto !important;
-        min-height: auto !important;
-        max-height: none !important;
-        display: flex !important;
-        align-items: flex-start !important;
-    }
-
-    .login-portal-ui .ultimate-card {
-        display: block !important;
-        width: 100% !important;
-        border-radius: 0 !important;
-        height: auto !important;
-        border: none !important;
-    }
-
-    .login-portal-ui .vault-side {
-        padding: 4rem 2rem 3rem !important;
-        min-height: auto !important;
-        text-align: center;
-        align-items: center;
-    }
-
-    .login-portal-ui .v-main-title {
-        font-size: 2.4rem !important;
-    }
-
-    .login-portal-ui .v-description {
-        margin: 0 auto 2.5rem !important;
-    }
-
-    .login-portal-ui .v-perk-list {
-        align-items: center;
-        text-align: left;
-        max-width: 320px;
-        margin: 0 auto;
-    }
-
-    .login-portal-ui .studio-side {
-        padding: 4rem 1.5rem 6rem !important;
-        background: #fff;
-    }
-
-    .ultimate-card.theme-dark .studio-side {
-        background: #0a0a0a !important;
-    }
-
-    .login-portal-ui .s-close-btn {
-        top: 1.5rem !important;
-        right: 1.5rem !important;
-        width: 40px !important;
-        height: 40px !important;
     }
 }

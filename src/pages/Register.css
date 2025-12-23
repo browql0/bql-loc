@@ -1,14 +1,13 @@
 /* Vision 7.4 - Final Transcendence: Fleet Portal Edition */
 .register-page-v74 {
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     background-color: #fff;
     font-family: 'Inter', sans-serif;
     position: relative;
-    overflow-y: auto;
-    /* Allow scrolling */
+    overflow: hidden;
     padding: 2rem;
 }
 
@@ -67,8 +66,7 @@
     width: 100%;
     max-width: 1100px;
     height: auto;
-    min-height: 700px;
-    max-height: 90vh;
+    max-height: 85vh;
     position: relative;
     z-index: 10;
     display: flex;
@@ -80,6 +78,7 @@
     grid-template-columns: 1fr 1.2fr;
     background: #fff;
     height: 100%;
+    max-height: 85vh;
     border-radius: 44px;
     overflow: hidden;
     box-shadow:
@@ -568,22 +567,78 @@
     }
 }
 
-/* Responsive High-Fi */
+/* ========== DESKTOP REFINEMENTS ========== */
+@media (min-width: 1025px) {
+    .register-page-v74 {
+        overflow: hidden;
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        margin: 0;
+    }
+
+    .layout-portal {
+        height: 90vh;
+        max-height: 90vh;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ultimate-card {
+        height: auto;
+        max-height: 90vh;
+        aspect-ratio: auto;
+        width: 1100px;
+    }
+
+    .vault-side {
+        height: 100%;
+        overflow-y: auto;
+        scrollbar-width: none;
+        /* Firefox */
+    }
+
+    .vault-side::-webkit-scrollbar {
+        display: none;
+        /* Chrome/Safari */
+    }
+
+    .studio-side {
+        height: 100%;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+    }
+
+    .studio-side::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .studio-side::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .studio-side::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 10px;
+    }
+}
+
+/* ========== TABLET & MOBILE ========== */
 @media (max-width: 1024px) {
     .register-page-v74 {
         padding: 0 !important;
-        /* Remove padding to eliminate white gap at top */
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        /* Crucial for mobile scroll to start at 0 */
-        justify-content: flex-start !important;
-        /* Force content to start at absolute top */
+        display: block !important;
         height: auto !important;
         min-height: 100vh !important;
         overflow-x: hidden !important;
         overflow-y: auto !important;
-        /* Force scroll visibility on mobile */
+        -webkit-overflow-scrolling: touch;
     }
 
     .layout-portal {
@@ -592,17 +647,13 @@
         margin: 0 !important;
         padding: 0 !important;
         min-height: auto !important;
-        /* Allow content to define height */
         max-height: none !important;
-        /* Remove desktop constraints */
-        display: flex !important;
-        align-items: flex-start !important;
-        /* Ensure top isn't clipped */
+        display: block !important;
     }
 
     .ultimate-card {
-        display: block !important;
-        /* Change grid to block for standard flow */
+        display: flex !important;
+        flex-direction: column !important;
         width: 100% !important;
         border-radius: 0 !important;
         height: auto !important;
@@ -610,71 +661,165 @@
         box-shadow: none !important;
     }
 
+    /* CRUCIAL: Reorder - Form first, Hero second on mobile */
     .vault-side {
-        padding: 4rem 2rem 3rem !important;
+        order: 2;
+        padding: 2rem 1.5rem !important;
         min-height: auto !important;
-        justify-content: center;
         text-align: center;
+        display: flex;
+        flex-direction: column;
         align-items: center;
     }
 
     .studio-side {
-        padding: 4rem 1.5rem 6rem !important;
+        order: 1;
+        padding: 2rem 1.5rem 2rem !important;
         background: #fff;
-        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        min-height: auto !important;
+    }
+
+    /* Compact vault header on mobile */
+    .vault-header {
+        margin-bottom: 1rem;
+    }
+
+    .portal-logo {
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+
+    .v-tag {
+        margin: 0 auto 1rem;
+        font-size: 0.6rem;
     }
 
     .v-main-title {
-        font-size: 2.6rem !important;
+        font-size: 1.8rem !important;
+        margin-bottom: 0.75rem;
     }
 
     .v-description {
-        margin: 0 auto 2.5rem !important;
+        font-size: 0.9rem;
+        margin: 0 auto 1.5rem !important;
     }
 
     .v-perk-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
         align-items: center;
         text-align: left;
         max-width: 340px;
         margin: 0 auto;
     }
 
-    .portal-logo {
-        justify-content: center;
-        margin-bottom: 2rem;
+    .perk-item {
+        gap: 1rem;
     }
 
-    .v-tag {
-        margin: 0 auto 1.5rem;
+    .perk-icon-wrap {
+        width: 32px;
+        height: 32px;
+        flex-shrink: 0;
+    }
+
+    .perk-text strong {
+        font-size: 0.85rem;
+    }
+
+    .perk-text span {
+        font-size: 0.75rem;
     }
 
     .v-exit {
-        margin-top: 2.5rem;
+        margin-top: 1.5rem;
         width: 100%;
-        max-width: 300px;
-        margin-left: auto;
-        margin-right: auto;
+        max-width: 280px;
         justify-content: center;
+        padding: 0.6rem 1rem;
+        font-size: 0.7rem;
     }
 
-    .s-close-btn {
-        top: 1.5rem !important;
-        right: 1.5rem !important;
-        width: 40px !important;
-        height: 40px !important;
+    .vault-footer {
+        margin-top: 1rem;
     }
-}
 
-@media (max-width: 480px) {
-    .v-main-title {
-        font-size: 2rem !important;
+    /* Studio side adjustments */
+    .studio-header {
+        margin-bottom: 1rem;
+    }
+
+    .f-progress {
+        margin-bottom: 1rem;
     }
 
     .f-main-title {
-        font-size: 1.8rem !important;
+        font-size: 1.6rem !important;
+        margin-bottom: 0.25rem;
+    }
+
+    .f-main-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .studio-form {
+        gap: 1rem;
+        margin-top: 0.25rem;
+    }
+
+    .s-field-group label {
+        font-size: 0.7rem;
+        margin-bottom: 0.4rem;
     }
 
     .s-input-wrap input {
-        padding: 1rem 1.2rem 1rem 3.2rem !important;
+        padding: 0.9rem 1.2rem 0.9rem 3rem !important;
+        font-size: 0.9rem;
+    }
+
+    .s-submit-btn {
+        margin-top: 0.75rem;
+        padding: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .studio-footer {
+        margin-top: 1.25rem;
+        font-size: 0.8rem;
+    }
+
+    .s-close-btn {
+        top: 1rem !important;
+        right: 1rem !important;
+        width: 36px !important;
+        height: 36px !important;
+    }
+}
+
+/* ========== SMALL MOBILE ========== */
+@media (max-width: 480px) {
+    .v-main-title {
+        font-size: 1.5rem !important;
+    }
+
+    .f-main-title {
+        font-size: 1.4rem !important;
+    }
+
+    .s-input-wrap input {
+        padding: 0.85rem 1rem 0.85rem 2.8rem !important;
+    }
+
+    .v-perk-list {
+        gap: 0.75rem;
+    }
+
+    .studio-side {
+        padding: 1.5rem 1rem 1.5rem !important;
+    }
+
+    .vault-side {
+        padding: 1.5rem 1rem !important;
     }
 }

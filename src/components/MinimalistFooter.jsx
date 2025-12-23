@@ -24,11 +24,9 @@ const MinimalistFooter = () => {
 
                     <div className="footer-social animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
                         <div className="social-links">
-                            <a href="https://facebook.com" aria-label="Facebook"><Facebook size={20} /></a>
-                            <a href="https://twitter.com" aria-label="Twitter"><Twitter size={20} /></a>
                             <a href="https://instagram.com" aria-label="Instagram"><Instagram size={20} /></a>
                             <a href="https://linkedin.com" aria-label="LinkedIn"><Linkedin size={20} /></a>
-                            <a href="mailto:contact@bqlrent.com" aria-label="Email"><Mail size={20} /></a>
+                            <a href="mailto:bqlrent@hotmail.com" aria-label="Email"><Mail size={20} /></a>
                         </div>
                     </div>
                 </div>

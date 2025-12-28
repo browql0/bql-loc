@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 import {
     Plus,
     Search,
@@ -12,47 +13,48 @@ import {
 } from 'lucide-react';
 import './cars.css';
 import AddCarModal from './AddCarModal';
+import EditCarModal from './EditCarModal';
 
-const CarsTab = () => {
+const CarsTab = ({ agencyId }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingCar, setEditingCar] = useState(null);
+    const [cars, setCars] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const cars = [
-        {
-            id: 1,
-            name: 'Mercedes-Benz G-Class',
-            brand: 'Mercedes',
-            plate: '12345-A-10',
-            status: 'Disponible',
-            price: '2500 DH',
-            image: 'https://images.unsplash.com/photo-1520031484130-467b5299773f?auto=format&fit=crop&q=80&w=400',
-            specs: { km: '15,000 km', fuel: 'Diesel', seats: 5 }
-        },
-        {
-            id: 2,
-            name: 'Range Rover Sport',
-            brand: 'Land Rover',
-            plate: '67890-B-10',
-            status: 'Louée',
-            price: '1800 DH',
-            image: 'https://images.unsplash.com/photo-1606148684497-8740f9f3883a?auto=format&fit=crop&q=80&w=400',
-            specs: { km: '22,400 km', fuel: 'Diesel', seats: 5 }
-        },
-        {
-            id: 3,
-            name: 'Volkswagen Golf 8',
-            brand: 'VW',
-            plate: '54321-C-06',
-            status: 'Disponible',
-            price: '600 DH',
-            image: 'https://images.unsplash.com/photo-1617469767053-d3b523a0b982?auto=format&fit=crop&q=80&w=400',
-            specs: { km: '8,200 km', fuel: 'Essence', seats: 5 }
-        },
-    ];
+    const fetchCars = async () => {
+        try {
+            setLoading(true);
+            // If agencyId is not yet available, we might want to wait or return
+            // But usually the parent passes it when ready or we fetch user's cars
+            // For robustness, let's fetch based on the implicit agency of the user if prop is missing,
+            // or better yet, wait for prop. 
+            // Actually, we can just query 'cars' and rely on RLS if we set it up properly?
+            // "c_agency_manage" using "get_my_agency()" does that!
+            // So simplistic query is enough:
+
+            const { data, error } = await supabase
+                .from('cars')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setCars(data || []);
+        } catch (error) {
+            console.error('Error fetching cars:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchCars();
+    }, []); // Fetch on mount. RLS handles the filtering.
 
     const filteredCars = cars.filter(car =>
-        car.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        car.plate.includes(searchTerm)
+        (car.brand + ' ' + car.model).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        car.plate.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -71,6 +73,16 @@ const CarsTab = () => {
             <AddCarModal
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
+                onSuccess={() => {
+                    setIsAddModalOpen(false);
+                    fetchCars();
+                }}
+            />
+            <EditCarModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                carData={editingCar}
+                onSuccess={fetchCars}
             />
 
             <div className="tab-actions">
@@ -90,46 +102,63 @@ const CarsTab = () => {
             </div>
 
             <div className="cars-grid">
-                {filteredCars.map((car) => (
-                    <div key={car.id} className="car-card">
-                        <div className="car-image">
-                            <img src={car.image} alt={car.name} />
-                            <div className="car-badge" data-status={car.status}>{car.status}</div>
-                            <div className="car-price-tag">{car.price}<span>/jour</span></div>
+                {loading ? (
+                    <div style={{ color: 'white', padding: '20px' }}>Chargement de la flotte...</div>
+                ) : filteredCars.length === 0 ? (
+                    <div style={{ color: 'white', padding: '20px' }}>Aucun véhicule trouvé.</div>
+                ) : (
+                    filteredCars.map((car) => (
+                        <div key={car.id} className="car-card">
+                            <div className="car-image">
+                                <img src={car.image_url || 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=400'} alt={car.model} />
+                                <div className="car-badge" data-status={car.status}>{car.status}</div>
+                                <div className="car-price-tag">{car.price_per_day} DH<span>/jour</span></div>
+                            </div>
+
+                            <div className="car-info">
+                                <div className="car-header">
+                                    <div>
+                                        <h3>{car.brand} {car.model}</h3>
+                                        <span className="plate-number">{car.plate}</span>
+                                    </div>
+                                    <button className="settings-btn" onClick={() => {
+                                        setEditingCar(car);
+                                        setIsEditModalOpen(true);
+                                    }}><Settings size={18} /></button>
+                                </div>
+
+                                <div className="car-specs">
+                                    <div className="spec-item">
+                                        <Gauge size={16} />
+                                        <span>{car.mileage || '0'} km</span>
+                                    </div>
+                                    <div className="spec-item">
+                                        <Fuel size={16} />
+                                        <span>{car.fuel_type || 'N/A'}</span>
+                                    </div>
+                                    <div className="spec-item">
+                                        <UsersIcon size={16} />
+                                        <span>5 pers.</span>
+                                    </div>
+                                </div>
+
+                                <div className="car-footer">
+                                    <button className="btn-details">
+                                        Voir détails <ChevronRight size={16} />
+                                    </button>
+                                    <button className="btn-delete-car" onClick={async () => {
+                                        if (window.confirm('Supprimer ce véhicule ?')) {
+                                            await supabase.from('cars').delete().eq('id', car.id);
+                                            fetchCars();
+                                        }
+                                    }} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}>
+                                        Supprimer
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-
-                        <div className="car-info">
-                            <div className="car-header">
-                                <div>
-                                    <h3>{car.name}</h3>
-                                    <span className="plate-number">{car.plate}</span>
-                                </div>
-                                <button className="settings-btn"><Settings size={18} /></button>
-                            </div>
-
-                            <div className="car-specs">
-                                <div className="spec-item">
-                                    <Gauge size={16} />
-                                    <span>{car.specs.km}</span>
-                                </div>
-                                <div className="spec-item">
-                                    <Fuel size={16} />
-                                    <span>{car.specs.fuel}</span>
-                                </div>
-                                <div className="spec-item">
-                                    <UsersIcon size={16} />
-                                    <span>{car.specs.seats} pers.</span>
-                                </div>
-                            </div>
-
-                            <div className="car-footer">
-                                <button className="btn-details">
-                                    Voir détails <ChevronRight size={16} />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                ))}
+                    ))
+                )}
             </div>
         </div>
     );

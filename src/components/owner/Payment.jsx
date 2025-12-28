@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Download,
     Search,
@@ -11,6 +11,7 @@ import {
     Filter
 } from 'lucide-react';
 import './Payment.css';
+import { supabase } from '../../lib/supabase';
 
 const PaymentTab = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -21,13 +22,38 @@ const PaymentTab = () => {
         { label: 'Panier Moyen', value: '524 DH', change: '-2.1%', icon: TrendingUp, trend: 'down' },
     ];
 
-    const transactions = [
-        { id: 'TRX-001', client: 'Karim Bennani', date: '22 Déc 2024', amount: '1,200 DH', method: 'Carte Bancaire', status: 'Succès' },
-        { id: 'TRX-002', client: 'Sara Mansouri', date: '21 Déc 2024', amount: '800 DH', method: 'Espèces', status: 'En attente' },
-        { id: 'TRX-003', client: 'Omar Tazi', date: '20 Déc 2024', amount: '2,500 DH', method: 'Virement', status: 'Succès' },
-        { id: 'TRX-004', client: 'Laila Idrissi', date: '19 Déc 2024', amount: '3,200 DH', method: 'Carte Bancaire', status: 'Annulé' },
-        { id: 'TRX-005', client: 'Youssef Alami', date: '18 Déc 2024', amount: '600 DH', method: 'Carte Bancaire', status: 'Succès' },
-    ];
+    const [transactions, setTransactions] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchTransactions = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('bookings')
+                    .select('*, clients(name)')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (data) {
+                    setTransactions(data.map(b => ({
+                        id: b.id.substring(0, 8).toUpperCase(),
+                        client: b.clients?.name || 'Client Inconnu',
+                        date: new Date(b.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }),
+                        amount: (b.total_price || 0) + ' DH',
+                        method: 'Virement', // Placeholder since DB doesn't have method column
+                        status: b.status === 'confirmed' ? 'Succès' : b.status === 'pending' ? 'En attente' : b.status
+                    })));
+                }
+            } catch (error) {
+                console.error("Error fetching payments:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTransactions();
+    }, []);
 
     return (
         <div className="payment-tab">

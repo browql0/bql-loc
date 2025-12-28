@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 import {
     Plus,
     Search,
@@ -16,29 +17,59 @@ import EditStaffModal from './EditStaffModal';
 import PremiumSelect from './PremiumSelect';
 import './staff.css';
 
-const StaffTab = () => {
+const StaffTab = ({ agencyId }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [selectedStaff, setSelectedStaff] = useState(null);
     const [selectedStaffRole, setSelectedStaffRole] = useState('Tous les rôles');
+    const [staffMembers, setStaffMembers] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const staffMembers = [
-        { id: 1, name: 'Amine Alaoui', role: 'Gestionnaire', email: 'amine@bql.com', status: 'Actif', joins: '12 Jan 2024' },
-        { id: 2, name: 'Siham Berrada', role: 'Agent Accueil', email: 'siham@bql.com', status: 'Actif', joins: '05 Mar 2024' },
-        { id: 3, name: 'Yassine Karim', role: 'Chauffeur', email: 'yassine@bql.com', status: 'En Congé', joins: '20 Fév 2024' },
-    ];
+    const handleDelete = async (id) => {
+        if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce membre ? (Cela ne supprime pas encore le compte Auth, mais retire l\'accès au dashboard)')) return;
+
+        try {
+            const { error } = await supabase.from('profiles').delete().eq('id', id);
+            if (error) throw error;
+            setStaffMembers(prev => prev.filter(member => member.id !== id));
+        } catch (error) {
+            console.error('Error deleting staff:', error);
+            alert('Erreur lors de la suppression.');
+        }
+    };
+
+    const fetchStaff = async () => {
+        try {
+            setLoading(true);
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                // .eq('role', 'staff') // Optionally filter by role if needed
+                .neq('role', 'owner'); // Exclude owner self if desired
+
+            if (error) throw error;
+            setStaffMembers(data || []);
+        } catch (error) {
+            console.error('Error fetching staff:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchStaff();
+    }, []);
 
     const roleOptions = [
         { value: 'Tous les rôles', label: 'Tous les rôles' },
+        { value: 'staff', label: 'Staff' },
         { value: 'Gestionnaire', label: 'Gestionnaire' },
-        { value: 'Agent Accueil', label: 'Agent Accueil' },
         { value: 'Chauffeur', label: 'Chauffeur' },
     ];
 
     const filteredStaff = staffMembers.filter(staff => {
-        const matchesSearch = staff.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            staff.role.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = (staff.email || '').toLowerCase().includes(searchTerm.toLowerCase());
         const matchesRole = selectedStaffRole === 'Tous les rôles' || staff.role === selectedStaffRole;
         return matchesSearch && matchesRole;
     });
@@ -56,11 +87,17 @@ const StaffTab = () => {
                 </button>
             </div>
 
-            <AddStaffModal isOpen={showAddModal} onClose={() => setShowAddModal(false)} />
+            <AddStaffModal
+                isOpen={showAddModal}
+                onClose={() => setShowAddModal(false)}
+                agencyId={agencyId}
+                onSuccess={fetchStaff}
+            />
             <EditStaffModal
                 isOpen={showEditModal}
                 onClose={() => setShowEditModal(false)}
                 staffData={selectedStaff}
+                onSuccess={fetchStaff}
             />
 
             <div className="tab-actions">
@@ -68,7 +105,7 @@ const StaffTab = () => {
                     <Search size={18} />
                     <input
                         type="text"
-                        placeholder="Rechercher un membre..."
+                        placeholder="Rechercher un membre par email..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -83,17 +120,13 @@ const StaffTab = () => {
             </div>
 
             <div className="staff-grid">
-                {filteredStaff.map((staff) => {
-                    const initials = staff.name
-                        .split(' ')
-                        .map(n => n[0])
-                        .join('')
-                        .toUpperCase();
+                {loading ? <div style={{ color: 'white' }}>Chargement...</div> : filteredStaff.map((staff) => {
+                    const initials = (staff.email || 'User').substring(0, 2).toUpperCase();
 
                     return (
                         <div key={staff.id} className="staff-card">
                             <div className="card-top">
-                                <div className="status-badge" data-status={staff.status}>{staff.status}</div>
+                                <div className="status-badge" data-status="Actif">Actif</div>
                                 <button className="more-btn"><MoreVertical size={18} /></button>
                             </div>
 
@@ -103,7 +136,7 @@ const StaffTab = () => {
                                         <span className="avatar-initials">{initials}</span>
                                     </div>
                                 </div>
-                                <h3>{staff.name}</h3>
+                                <h3>{staff.email}</h3>
                                 <div className="staff-role-badge">{staff.role}</div>
                             </div>
 
@@ -114,7 +147,7 @@ const StaffTab = () => {
                                 </div>
                                 <div className="detail-item">
                                     <Calendar size={18} />
-                                    <span>Membre depuis {staff.joins}</span>
+                                    <span>Inscrit le {new Date(staff.created_at).toLocaleDateString()}</span>
                                 </div>
                             </div>
 
@@ -129,7 +162,7 @@ const StaffTab = () => {
                                     <Edit2 size={18} />
                                     <span>Modifier</span>
                                 </button>
-                                <button className="action-btn delete">
+                                <button className="action-btn delete" onClick={() => handleDelete(staff.id)}>
                                     <Trash2 size={18} />
                                 </button>
                             </div>

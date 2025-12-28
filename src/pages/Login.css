@@ -25,7 +25,7 @@
 }
 
 .login-portal-ui.mode-dark.is-power-switching::before {
-    background: #4f46e5;
+    background: #333333;
 }
 
 @keyframes flash-burst {
@@ -209,7 +209,7 @@
 /* Flicker effect for Zap icon */
 .flicker-zap {
     animation: zap-flicker 1.5s infinite;
-    color: #4f46e5;
+    color: #cbd5e1;
 }
 
 @keyframes zap-flicker {
@@ -217,17 +217,17 @@
     0%,
     100% {
         opacity: 1;
-        filter: drop-shadow(0 0 5px rgba(79, 70, 229, 0.8));
+        filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
     }
 
     50% {
         opacity: 0.7;
-        filter: drop-shadow(0 0 2px rgba(79, 70, 229, 0.4));
+        filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
     }
 
     55% {
         opacity: 1;
-        filter: drop-shadow(0 0 8px rgba(79, 70, 229, 1));
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
     }
 
     60% {

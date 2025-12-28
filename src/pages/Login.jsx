@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import {
     Mail, Lock, ArrowRight, ArrowLeft,
     Command, Zap, X, LayoutDashboard,
-    FileText, Activity
+    FileText, Activity, Shield
 } from 'lucide-react';
 import './Login.css';
 
-const Login = () => {
-    const navigate = useNavigate();
-    const [isDark, setIsDark] = useState(false);
-    const [isThemeSwitching, setIsThemeSwitching] = useState(false);
+const Login = ({ navigate }) => {
+
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
     const [formData, setFormData] = useState({
         email: '',
-        password: '',
-        rememberMe: false
+        password: ''
     });
 
     useEffect(() => {
@@ -29,24 +28,93 @@ const Login = () => {
         });
     };
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        setIsThemeSwitching(true);
+        setLoading(true);
+        setError(null);
 
-        // Simulation d'une décharge d'énergie avant le switch
-        setTimeout(() => {
-            setIsDark(!isDark);
-            setTimeout(() => setIsThemeSwitching(false), 600);
-        }, 300);
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: formData.email,
+                password: formData.password,
+            });
+
+            if (error) throw error;
+
+            // Role-based redirection
+            let role = data.user?.user_metadata?.role;
+
+            // If no role in metadata, try to fetch from profiles table
+            if (!role) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', data.user.id)
+                    .maybeSingle();
+
+                if (profile) {
+                    role = profile.role;
+                }
+            }
+
+            // Check if user has a role assigned
+            if (!role) {
+                navigate('pending-approval');
+                return;
+            }
+
+            if (role === 'owner') {
+                navigate('owner/dashboard');
+            } else if (role === 'superadmin') {
+                navigate('/superadmin/dashboard');
+            } else if (role === 'staff') {
+                navigate('/staff/dashboard');
+            } else {
+                // Unknown role, redirect to pending approval
+                navigate('pending-approval');
+            }
+
+        } catch (err) {
+            setError(err.message);
+            alert('Login failed: ' + err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleNavigateToRegister = (e) => {
         e.preventDefault();
-        navigate('/register');
+        navigate('register');
+    };
+
+    // Temporary helper to create superadmin
+    const createSuperAdmin = async () => {
+        const email = prompt("Enter Superadmin Email:");
+        const password = prompt("Enter Superadmin Password:");
+        if (!email || !password) return;
+
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        role: 'superadmin',
+                        full_name: 'Super Admin'
+                    }
+                }
+            });
+            if (error) throw error;
+            alert('Superadmin created! Check your email to confirm if confirmation is enabled.');
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
     };
 
     return (
-        <div className={`register-page-v74 login-portal-ui ${isDark ? 'mode-dark' : 'mode-light'} ${isThemeSwitching ? 'is-power-switching' : ''}`}>
+        <div className="register-page-v74 login-portal-ui mode-light">
+
+
             {/* Site Atmosphere Alignment */}
             <div className="site-aura">
                 <div className="aura-orb orb-indigo"></div>
@@ -55,20 +123,20 @@ const Login = () => {
             </div>
 
             <div className="layout-portal">
-                <div className={`ultimate-card ${isDark ? 'theme-dark' : 'theme-light'}`}>
+                <div className="ultimate-card theme-light">
                     {/* Visual Side: The Obsidian Vault */}
                     <div className="vault-side">
                         <div className="vault-header">
-                            <div className="portal-logo" onClick={() => navigate('/')}>
+                            <div className="portal-logo" onClick={() => navigate('home')}>
                                 <div className="logo-box"><Command size={20} /></div>
-                                <span>BQL RENT SYSTEMS</span>
+                                <span style={{ color: 'white' }}>BQL RENT SYSTEMS</span>
                             </div>
                         </div>
 
                         <div className="vault-content">
                             <div className="v-tag animate-fade-in">
-                                <Zap size={12} className={isDark ? 'flicker-zap' : ''} />
-                                <span>ACCÈS AGENT CERTIFIÉ</span>
+                                <Zap size={12} />
+                                <span style={{ color: 'rgba(255,255,255,0.7)' }}>ACCÈS AGENT CERTIFIÉ</span>
                             </div>
 
                             <h1 className="v-main-title animate-title">
@@ -82,10 +150,10 @@ const Login = () => {
 
                             <div className="v-perk-list">
                                 <div className="perk-item animate-perk" style={{ animationDelay: '0.4s' }}>
-                                    <div className="perk-icon-wrap"><Activity size={18} /></div>
+                                    <div className="perk-icon-wrap"><Shield size={18} /></div>
                                     <div className="perk-text">
                                         <strong>Session Sécurisée</strong>
-                                        <span>Cryptage de niveau militaire.</span>
+                                        <span>Tous vos données sont sécurisées.</span>
                                     </div>
                                 </div>
                                 <div className="perk-item animate-perk" style={{ animationDelay: '0.6s' }}>
@@ -95,22 +163,34 @@ const Login = () => {
                                         <span>Données synchronisées en temps réel.</span>
                                     </div>
                                 </div>
+                                <div className="perk-item animate-perk" style={{ animationDelay: '0.8s' }}>
+                                    <div className="perk-icon-wrap"><FileText size={18} /></div>
+                                    <div className="perk-text">
+                                        <strong>Documents Centralisés</strong>
+                                        <span>Tous vos contrats à portée de main.</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="vault-footer">
-                            <button className="v-exit" onClick={() => navigate('/')}>
-                                <ArrowLeft size={14} />
-                                <span>RETOUR ACCUEIL</span>
-                            </button>
-                        </div>
+
 
                         <div className="mesh-gradient"></div>
                     </div>
 
                     {/* Form Side: The Pearl Studio */}
                     <div className="studio-side">
+                        {/* Mobile Brand Header (Visible only on mobile) */}
+                        <div className="mobile-brand-header">
+                            <div className="logo-box-mobile"><Command size={18} /></div>
+                            <span>BQL RENT SYSTEMS</span>
+                        </div>
+
                         <div className="studio-header">
+                            <div className="f-progress">
+                                <span className="p-bar"></span>
+                                <span className="p-bar active"></span>
+                            </div>
                             <h2 className="f-main-title">Identification</h2>
                             <p className="f-main-subtitle">Entrez vos accès pour ouvrir le portail</p>
                         </div>
@@ -174,7 +254,7 @@ const Login = () => {
                             <p>PAS ENCORE D'ESPACE ? <a href="#" onClick={handleNavigateToRegister}>CRÉER UN COMPTE</a></p>
                         </div>
 
-                        <button className="s-close-btn" onClick={() => navigate('/')}>
+                        <button className="s-close-btn" onClick={() => navigate('home')}>
                             <X size={20} />
                         </button>
                     </div>

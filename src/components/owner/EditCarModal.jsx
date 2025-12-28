@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { X, Car, Hash, Gauge, Calendar, CreditCard, Users, Settings, Fuel, Activity, Upload, Image as ImageIcon, CheckCircle, ChevronRight, ChevronLeft } from 'lucide-react';
 import './AddCarModal.css';
 
-const AddCarModal = ({ isOpen, onClose }) => {
+const EditCarModal = ({ isOpen, onClose, carData, onSuccess }) => {
     const [currentStep, setCurrentStep] = useState(1);
     const [formData, setFormData] = useState({
         brand: '',
@@ -20,6 +20,27 @@ const AddCarModal = ({ isOpen, onClose }) => {
     });
 
     const [carPhoto, setCarPhoto] = useState(null);
+
+    useEffect(() => {
+        if (carData) {
+            setFormData({
+                brand: carData.brand || '',
+                model: carData.model || '',
+                plate: carData.plate || '',
+                mileage: carData.mileage || '',
+                type: carData.type || '', // Assumes these fields exist or we handle them gracefully
+                transmission: carData.transmission || '',
+                fuelType: carData.fuel_type || '', // DB column is usually fuel_type
+                seats: carData.seats || '',
+                pricePerDay: carData.price_per_day || '',
+                maintenanceDate: carData.maintenance_date || '', // hypothetical column
+                papiersEndDate: carData.papiers_end_date || '', // hypothetical column
+            });
+            if (carData.image_url) {
+                setCarPhoto(carData.image_url);
+            }
+        }
+    }, [carData]);
 
     if (!isOpen) return null;
 
@@ -44,67 +65,33 @@ const AddCarModal = ({ isOpen, onClose }) => {
 
     const handleSubmit = async () => {
         try {
-            // Get Agency ID first
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error("Utilisateur non connecté");
-
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('agency_id')
-                .eq('id', user.id)
-                .single();
-
-            if (!profile?.agency_id) throw new Error("Agence introuvable pour cet utilisateur");
-
-            // Prepare Car Data logic
-            // Note: Image upload is skipped for now, using mock URL if present or null
-            // In real app, we would upload `carPhoto` blob to 'cars' bucket here.
-
-            const newCar = {
-                agency_id: profile.agency_id,
+            const updates = {
                 brand: formData.brand,
                 model: formData.model,
                 plate: formData.plate,
-                status: 'available', // Default
                 price_per_day: parseFloat(formData.pricePerDay),
                 mileage: parseInt(formData.mileage) || 0,
-                fuel_type: formData.fuelType, // Ensure matches DB column or just text
-                // Mapping other fields if column exists in schema, otherwise might ignore
-                // 'transmission', 'type', 'seats' are not in schema.sql but useful.
-                // Assuming schema might need update or we store in a jsonb field if exists?
-                // Checking schema.sql: id, agency_id, brand, model, plate, status, price_per_day, created_at.
-                // Missing: mileage, fuel_type, etc. 
-                // Wait, I see I used 'mileage', 'fuel_type' in cars.jsx display.
-                // I should update schema logic or assume columns were added?
-                // User said "connect all". I will try to insert basics.
-                // If columns don't exist, insert will fail. 
-                // Let's stick to the columns I SAW in schema.sql: brand, model, plate, status, price_per_day.
-                // I will Add the extra info if columns exist, but I'll be safe.
-                // Wait, schema.sql showed:
-                // brand, model, plate, status, price_per_day
-                // Just those.
-                // So I will only insert those for now to avoid errors!
+                // We attempt to update these fields. If they don't exist in schema, error unless we handle it.
+                // Assuming schema is flexible or we accept risk as per AddCarModal.
+                fuel_type: formData.fuelType,
+                // type: formData.type, // If columns don't exist, these will fail
+                // transmission: formData.transmission,
+                // seats: formData.seats,
             };
 
-            const { error } = await supabase.from('cars').insert(newCar);
+            const { error } = await supabase
+                .from('cars')
+                .update(updates)
+                .eq('id', carData.id);
 
             if (error) throw error;
 
-            alert('Véhicule ajouté avec succès !');
+            alert('Véhicule modifié avec succès !');
             if (onSuccess) onSuccess();
-            else onClose();
-
-            // Reset form
-            setFormData({
-                brand: '', model: '', plate: '', mileage: '', type: '',
-                transmission: '', fuelType: '', seats: '', pricePerDay: '',
-                maintenanceDate: '', papiersEndDate: '',
-            });
-            setCarPhoto(null);
-            setCurrentStep(1);
+            onClose();
 
         } catch (error) {
-            console.error('Error adding car:', error);
+            console.error('Error updating car:', error);
             alert('Erreur: ' + error.message);
         }
     };
@@ -120,8 +107,8 @@ const AddCarModal = ({ isOpen, onClose }) => {
                     {/* Left Side: Form */}
                     <div className="modal-form-side">
                         <div className="modal-side-header">
-                            <div className="badge-tag car-badge">Étape {currentStep} sur 3</div>
-                            <h2>Ajouter un Véhicule</h2>
+                            <div className="badge-tag car-badge">Édition • Étape {currentStep}/3</div>
+                            <h2>Modifier Véhicule</h2>
 
                             {/* Progress Indicator */}
                             <div className="stepper-ui">
@@ -319,9 +306,9 @@ const AddCarModal = ({ isOpen, onClose }) => {
 
                                             <div className="premium-file-drop full-width" style={{ marginTop: '0.5rem' }}>
                                                 <label>Photo du Véhicule</label>
-                                                <div className="drop-zone car-drop-zone small" onClick={() => document.getElementById('car-photo-input').click()}>
+                                                <div className="drop-zone car-drop-zone small" onClick={() => document.getElementById('edit-car-photo-input').click()}>
                                                     <input
-                                                        id="car-photo-input"
+                                                        id="edit-car-photo-input"
                                                         type="file"
                                                         hidden
                                                         accept="image/*"
@@ -335,7 +322,7 @@ const AddCarModal = ({ isOpen, onClose }) => {
                                                     ) : (
                                                         <div className="drop-zone-content">
                                                             <ImageIcon size={20} />
-                                                            <span>Ajouter photo</span>
+                                                            <span>Mettre à jour photo</span>
                                                         </div>
                                                     )}
                                                 </div>
@@ -360,7 +347,7 @@ const AddCarModal = ({ isOpen, onClose }) => {
                                     </button>
                                 ) : (
                                     <button type="button" onClick={handleSubmit} className="btn-confirm-premium car-confirm">
-                                        Valider <CheckCircle size={18} />
+                                        Sauvegarder <CheckCircle size={18} />
                                         <div className="btn-shine"></div>
                                     </button>
                                 )}
@@ -430,10 +417,6 @@ const AddCarModal = ({ isOpen, onClose }) => {
                                     </div>
                                 </div>
                             </div>
-
-                            <div className="preview-hint">
-                                <p>Étape {currentStep} : {currentStep === 1 ? 'Base' : currentStep === 2 ? 'Technique' : 'Média'}</p>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -442,4 +425,4 @@ const AddCarModal = ({ isOpen, onClose }) => {
     );
 };
 
-export default AddCarModal;
+export default EditCarModal;

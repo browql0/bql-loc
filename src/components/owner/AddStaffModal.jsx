@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import { X, User, Mail, Phone, Shield, Calendar, Camera, Hash, Upload, FileText, Image as ImageIcon, ChevronRight, ChevronLeft, CheckCircle } from 'lucide-react';
 import PremiumSelect from './PremiumSelect';
 import './AddStaffModal.css';
 
-const AddStaffModal = ({ isOpen, onClose }) => {
+const AddStaffModal = ({ isOpen, onClose, agencyId, onSuccess }) => {
     const [currentStep, setCurrentStep] = useState(1);
     const [formData, setFormData] = useState({
         name: '',
@@ -18,6 +19,78 @@ const AddStaffModal = ({ isOpen, onClose }) => {
         staffPhoto: null,
         cinDoc: null
     });
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e) => {
+        if (e) e.preventDefault();
+
+        if (!agencyId) {
+            alert("Erreur: Impossible de récupérer l'ID de l'agence.");
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            // 1. Create temporary client to avoid logging out the owner
+            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+            const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+            const tempSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+                auth: {
+                    autoRefreshToken: false,
+                    persistSession: false
+                }
+            });
+
+            // 2. Sign Up User (Default password for MVP)
+            const tempPassword = "Password123!";
+            const { data: authData, error: authError } = await tempSupabase.auth.signUp({
+                email: formData.email,
+                password: tempPassword,
+                options: {
+                    data: {
+                        full_name: formData.name,
+                        role: 'staff', // stored in metadata
+                        job_title: formData.role // stored in metadata
+                    }
+                }
+            });
+
+            if (authError) throw authError;
+
+            if (authData.user) {
+                // 3. Upsert Profile
+                // Note: We map UI role (Job Title) to 'staff' for the database ENUM consistency.
+                // We attempt to save extra fields if columns exist, otherwise this might fail if columns are missing.
+                // For safety, we'll only send safe fields + force role='staff'.
+
+                const { error: profileError } = await tempSupabase
+                    .from('profiles')
+                    .upsert({
+                        id: authData.user.id,
+                        email: formData.email,
+                        role: 'staff', // Enforce ENUM value
+                        agency_id: agencyId,
+                        // We assume these columns might not exist yet based on schema.sql, 
+                        // but we'll try to update specific fields if the user has updated DB. 
+                        // If strict schema, we should omit them. 
+                        // For now, I'll omit new columns to ensure success and rely on Metadata for extra info if needed later.
+                    });
+
+                if (profileError) throw profileError;
+
+                alert(`Staff ajouté avec succès !\nEmail: ${formData.email}\nMot de passe provisoire: ${tempPassword}`);
+                if (onSuccess) onSuccess();
+                onClose();
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert('Erreur: ' + error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (!isOpen) return null;
 
@@ -201,8 +274,8 @@ const AddStaffModal = ({ isOpen, onClose }) => {
                                         Suivant <ChevronRight size={18} />
                                     </button>
                                 ) : (
-                                    <button type="submit" className="btn-confirm-premium">
-                                        Valider <CheckCircle size={18} />
+                                    <button type="button" className="btn-confirm-premium" onClick={handleSubmit} disabled={loading}>
+                                        {loading ? 'Création...' : 'Valider'} <CheckCircle size={18} />
                                         <div className="btn-shine"></div>
                                     </button>
                                 )}

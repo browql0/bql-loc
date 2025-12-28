@@ -1,20 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
+
 import {
     User, Mail, Building2, Lock, ArrowRight, ArrowLeft,
     Command, Zap, Shield, Sparkles, X, LayoutDashboard,
-    FileText, Activity
+    FileText, Activity, Phone, ChevronDown, Search
 } from 'lucide-react';
 import './Register.css';
+import './PhoneInput.css';
+import './RegisterFooter.css';
 
-const Register = () => {
-    const navigate = useNavigate();
+const Register = ({ navigate }) => {
+
+    const [notification, setNotification] = useState(null);
+    const [phonePrefix, setPhonePrefix] = useState('+212'); // Default Morocco
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [showPrefixDropdown, setShowPrefixDropdown] = useState(false);
+    const [prefixSearch, setPrefixSearch] = useState('');
+    const [phoneError, setPhoneError] = useState('');
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         agencyName: '',
         password: ''
     });
+
+    // Countries with phone codes and validation
+    const countries = [
+        { code: '+212', country: 'Maroc', flag: '🇲🇦', length: 10, pattern: /^0[5-7]\d{8}$/ },
+        { code: '+33', country: 'France', flag: '🇫🇷', length: 10, pattern: /^0[1-9]\d{8}$/ }
+    ];
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -24,14 +39,130 @@ const Register = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const validatePhoneNumber = (number) => {
+        const cleaned = number.replace(/\D/g, '');
+        const country = countries.find(c => c.code === phonePrefix);
+
+        if (!cleaned) {
+            setPhoneError('Le numéro de téléphone est requis');
+            return false;
+        }
+
+        if (country && !country.pattern.test(cleaned)) {
+            setPhoneError(`Format invalide pour ${country.country} (${country.length} chiffres attendus)`);
+            return false;
+        }
+
+        setPhoneError('');
+        return true;
+    };
+
+    const handlePhoneChange = (e) => {
+        const value = e.target.value;
+        setPhoneNumber(value);
+        if (value) {
+            validatePhoneNumber(value);
+        } else {
+            setPhoneError('');
+        }
+    };
+
+    const selectPrefix = (code) => {
+        setPhonePrefix(code);
+        setShowPrefixDropdown(false);
+        setPrefixSearch('');
+        if (phoneNumber) {
+            validatePhoneNumber(phoneNumber);
+        }
+    };
+
+    const filteredCountries = countries.filter(c =>
+        c.country.toLowerCase().includes(prefixSearch.toLowerCase()) ||
+        c.code.includes(prefixSearch)
+    );
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        alert("Espace Agence en cours de création...");
-        navigate('/');
+        setNotification(null);
+
+        // Validate phone
+        if (!validatePhoneNumber(phoneNumber)) {
+            return;
+        }
+
+        const fullPhone = phonePrefix + phoneNumber.replace(/\D/g, '');
+
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email: formData.email,
+                password: formData.password,
+                options: {
+                    data: {
+                        full_name: formData.name,
+                        agency_name: formData.agencyName,
+                        phone: fullPhone
+                    }
+                }
+            });
+
+            if (data.user) {
+                // Call the secure RPC function to create agency and profile
+                const { error: rpcError } = await supabase.rpc('create_agency_and_admin', {
+                    agency_name_input: formData.agencyName,
+                    owner_name_input: formData.name,
+                    owner_email_input: formData.email,
+                    owner_phone_input: fullPhone
+                });
+
+                if (rpcError) {
+                    console.error("Error creating agency/profile:", rpcError);
+                    // Critical error handling here if needed
+                }
+            }
+
+            if (error) throw error;
+
+            setNotification({
+                message: "Compte créé avec succès ! En attente d'approbation...",
+                type: 'success'
+            });
+
+            setTimeout(() => {
+                navigate('pending-approval');
+            }, 1500);
+
+        } catch (error) {
+            setNotification({
+                message: 'Erreur : ' + error.message,
+                type: 'error'
+            });
+        }
     };
 
     return (
         <div className="register-page-v74">
+            {/* Notification Popup */}
+            {notification && (
+                <div style={{
+                    position: 'fixed',
+                    top: '20px',
+                    right: '20px',
+                    backgroundColor: notification.type === 'success' ? '#10b981' : '#ef4444',
+                    color: 'white',
+                    padding: '16px 24px',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    zIndex: 1000,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    animation: 'slideIn 0.3s ease-out'
+                }}>
+                    {notification.type === 'success' ? <Zap size={20} /> : <X size={20} />}
+                    <span>{notification.message}</span>
+                </div>
+            )}
+
             {/* Site Atmosphere Alignment */}
             <div className="site-aura">
                 <div className="aura-orb orb-indigo"></div>
@@ -44,9 +175,9 @@ const Register = () => {
                     {/* Visual Side: The Obsidian Vault */}
                     <div className="vault-side">
                         <div className="vault-header">
-                            <div className="portal-logo" onClick={() => navigate('/')}>
+                            <div className="portal-logo" onClick={() => navigate('home')}>
                                 <div className="logo-box"><Command size={20} /></div>
-                                <span>BQL RENT SYSTEMS</span>
+                                <span style={{ color: 'white' }}>BQL RENT SYSTEMS</span>
                             </div>
                         </div>
 
@@ -88,21 +219,29 @@ const Register = () => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
+
+                        </div>
+                        {/* boutton retour
                         <div className="vault-footer">
-                            <button className="v-exit" onClick={() => navigate('/')}>
+                            <button className="v-exit" onClick={() => navigate('home')}>
                                 <ArrowLeft size={14} />
                                 <span>QUITTER LE PORTAIL</span>
                             </button>
                         </div>
-
+                        */}
                         {/* Immersive mesh light effect */}
                         <div className="mesh-gradient"></div>
                     </div>
 
                     {/* Form Side: The Pearl Studio */}
                     <div className="studio-side">
+                        {/* Mobile Brand Header (Visible only on mobile) */}
+                        <div className="mobile-brand-header">
+                            <div className="logo-box-mobile"><Command size={18} /></div>
+                            <span>BQL RENT SYSTEMS</span>
+                        </div>
+
                         <div className="studio-header">
                             <div className="f-progress">
                                 <span className="p-bar active"></span>
@@ -162,6 +301,64 @@ const Register = () => {
                             </div>
 
                             <div className="s-field-group">
+                                <label>TÉLÉPHONE PROFESSIONNEL</label>
+                                <div className="phone-input-container">
+                                    <div className="prefix-selector-wrapper">
+                                        <div
+                                            className="prefix-selector"
+                                            onClick={() => setShowPrefixDropdown(!showPrefixDropdown)}
+                                        >
+                                            <span className="selected-prefix">
+                                                {countries.find(c => c.code === phonePrefix)?.flag} {phonePrefix}
+                                            </span>
+                                            <ChevronDown size={16} className={`dropdown-arrow ${showPrefixDropdown ? 'open' : ''}`} />
+                                        </div>
+
+                                        {showPrefixDropdown && (
+                                            <div className="prefix-dropdown">
+                                                <div className="dropdown-search">
+                                                    <Search size={16} />
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Rechercher un pays..."
+                                                        value={prefixSearch}
+                                                        onChange={(e) => setPrefixSearch(e.target.value)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    />
+                                                </div>
+                                                <div className="countries-list">
+                                                    {filteredCountries.map((country) => (
+                                                        <div
+                                                            key={country.code}
+                                                            className={`country-option ${country.code === phonePrefix ? 'selected' : ''}`}
+                                                            onClick={() => selectPrefix(country.code)}
+                                                        >
+                                                            <span className="country-flag">{country.flag}</span>
+                                                            <span className="country-name">{country.country}</span>
+                                                            <span className="country-code">{country.code}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="s-input-wrap phone-input-wrap">
+                                        <Phone size={18} className="s-icon" />
+                                        <input
+                                            type="tel"
+                                            placeholder="0612345678"
+                                            value={phoneNumber}
+                                            onChange={handlePhoneChange}
+                                            required
+                                        />
+                                        <div className="s-glow"></div>
+                                    </div>
+                                </div>
+                                {phoneError && <div className="phone-error">{phoneError}</div>}
+                            </div>
+
+                            <div className="s-field-group">
                                 <label>MOT DE PASSE MAÎTRE</label>
                                 <div className="s-input-wrap">
                                     <Lock size={18} className="s-icon" />
@@ -184,11 +381,11 @@ const Register = () => {
                         </form>
 
                         <div className="studio-footer">
-                            <p>DÉJÀ ENREGISTRÉ ? <a href="#" onClick={(e) => { e.preventDefault(); navigate('/login'); }}>SE CONNECTER</a></p>
+                            <p>DÉJÀ ENREGISTRÉ ? <a href="#" onClick={(e) => { e.preventDefault(); navigate('login'); }}>SE CONNECTER</a></p>
                         </div>
 
                         {/* Refined floating close button */}
-                        <button className="s-close-btn" onClick={() => navigate('/')}>
+                        <button className="s-close-btn" onClick={() => navigate('home')}>
                             <X size={20} />
                         </button>
                     </div>

@@ -1,0 +1,236 @@
+.users-tab {
+    width: 100%;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.tab-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+}
+
+.header-info h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #000;
+    margin-bottom: 0.5rem;
+}
+
+.header-info p {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.search-bar-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #f5f5f5;
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    width: 280px;
+    transition: all 0.3s ease;
+}
+
+.search-bar-tab:focus-within {
+    background: #fff;
+    border-color: #000;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    width: 320px;
+}
+
+.search-bar-tab input {
+    border: none;
+    background: transparent;
+    outline: none;
+    width: 100%;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.filter-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #f5f5f5;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+}
+
+.filter-icon {
+    color: #666;
+}
+
+.role-select {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #000;
+    cursor: pointer;
+}
+
+/* User Table Specifics */
+.user-cell {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-avatar-mini {
+    width: 36px;
+    height: 36px;
+    background: #000;
+    color: #fff;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.user-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #000;
+}
+
+.user-email {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+/* Role Pills */
+.role-pill {
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.role-pill.admin {
+    background: #000;
+    color: #fff;
+}
+
+.role-pill.owner {
+    background: #eff6ff;
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+.role-pill.staff {
+    background: #fdf2f8;
+    color: #db2777;
+    border: 1px solid rgba(219, 39, 119, 0.1);
+}
+
+.role-pill.default {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.agency-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: #f9fafb;
+    border: 1px solid #f3f4f6;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #444;
+}
+
+.phone-mini {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: #555;
+    font-weight: 500;
+}
+
+.date-cell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: #666;
+    font-weight: 500;
+}
+
+.tab-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem;
+    gap: 1rem;
+    color: #666;
+}
+
+.loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #000;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .tab-header-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1.5rem;
+        text-align: center;
+    }
+
+    .header-actions {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .search-bar-tab,
+    .filter-wrapper {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .search-bar-tab:focus-within {
+        width: 100%;
+    }
+
+    .agency-td {
+        display: none;
+        /* Hide agency on mobile table to save space */
+    }
+}

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import {
     Users,
     Car,
@@ -16,13 +17,32 @@ import {
 } from 'lucide-react';
 import StaffTab from '../components/owner/staff';
 import CarsTab from '../components/owner/cars';
+import ClientsTab from '../components/owner/ClientsTab';
 import PaymentTab from '../components/owner/Payment';
 import './OwnerDashboard.css';
 
-const OwnerDashboard = () => {
+const OwnerDashboard = ({ navigate }) => {
     const [activeTab, setActiveTab] = useState('staff');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [showNotifications, setShowNotifications] = useState(false);
+    const [agencyId, setAgencyId] = useState(null);
+
+    useEffect(() => {
+        const fetchAgency = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('agency_id')
+                    .eq('id', user.id)
+                    .eq('id', user.id)
+                    .maybeSingle();
+
+                if (profile) setAgencyId(profile.agency_id);
+            }
+        };
+        fetchAgency();
+    }, []);
 
     const notifications = [
         { id: 1, title: 'Nouveau Staff', message: 'Amine Alaoui a rejoint l\'équipe.', time: 'Il y a 2 min', read: false },
@@ -33,6 +53,7 @@ const OwnerDashboard = () => {
     const menuItems = [
         { id: 'staff', label: 'Gestion Staff', icon: Users },
         { id: 'cars', label: 'Flotte Automobile', icon: Car },
+        { id: 'clients', label: 'Clients', icon: Users },
         { id: 'payments', label: 'Historique Paiements', icon: CreditCard },
     ];
 
@@ -78,7 +99,7 @@ const OwnerDashboard = () => {
                             <Settings size={20} />
                             <span>Paramètres</span>
                         </button>
-                        <button className="nav-item logout">
+                        <button className="nav-item logout" onClick={() => navigate && navigate('login')}>
                             <LogOut size={20} />
                             <span>Déconnexion</span>
                         </button>
@@ -159,8 +180,9 @@ const OwnerDashboard = () => {
 
                 <div className="tab-container">
                     <div className="glass-panel">
-                        {activeTab === 'staff' && <StaffTab />}
+                        {activeTab === 'staff' && <StaffTab agencyId={agencyId} />}
                         {activeTab === 'cars' && <CarsTab />}
+                        {activeTab === 'clients' && <ClientsTab />}
                         {activeTab === 'payments' && <PaymentTab />}
                     </div>
                 </div>

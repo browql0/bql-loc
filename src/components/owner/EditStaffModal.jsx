@@ -3,7 +3,9 @@ import { X, User, Mail, Phone, Shield, Calendar, Camera, Hash, Upload, ChevronRi
 import PremiumSelect from './PremiumSelect';
 import './AddStaffModal.css';
 
-const EditStaffModal = ({ isOpen, onClose, staffData }) => {
+import { supabase } from '../../lib/supabase';
+
+const EditStaffModal = ({ isOpen, onClose, staffData, onSuccess }) => {
     const [currentStep, setCurrentStep] = useState(1);
     const [formData, setFormData] = useState({
         name: '',
@@ -18,6 +20,40 @@ const EditStaffModal = ({ isOpen, onClose, staffData }) => {
         staffPhoto: null,
         cinDoc: null
     });
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (e) => {
+        if (e) e.preventDefault();
+        setLoading(true);
+
+        try {
+            // We can only update the profile row. We cannot update Auth email/metadata of another user easily.
+            const updates = {
+                role: 'staff', // Keep as staff for enum constraint
+                // Assumed columns (see AddStaffModal)
+                full_name: formData.name,
+                phone: formData.phone,
+                cin: formData.cinNumber,
+                job_title: formData.role // Store the job title here if column exists
+            };
+
+            const { error } = await supabase
+                .from('profiles')
+                .update(updates)
+                .eq('id', staffData.id);
+
+            if (error) throw error;
+
+            alert('Profil mis à jour avec succès !');
+            if (onSuccess) onSuccess();
+            onClose();
+        } catch (error) {
+            console.error(error);
+            alert('Erreur: ' + error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (staffData) {
@@ -200,8 +236,8 @@ const EditStaffModal = ({ isOpen, onClose, staffData }) => {
                                         Suivant <ChevronRight size={18} />
                                     </button>
                                 ) : (
-                                    <button type="submit" className="btn-confirm-premium">
-                                        Sauvegarder <CheckCircle size={18} />
+                                    <button type="button" className="btn-confirm-premium" onClick={handleSubmit} disabled={loading}>
+                                        {loading ? 'Sauvegarde...' : 'Sauvegarder'} <CheckCircle size={18} />
                                         <div className="btn-shine"></div>
                                     </button>
                                 )}

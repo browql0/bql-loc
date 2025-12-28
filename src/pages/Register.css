@@ -30,7 +30,7 @@
 .orb-indigo {
     width: 800px;
     height: 800px;
-    background: #6366f1;
+    background: #555555;
     top: -300px;
     right: -200px;
 }
@@ -76,8 +76,11 @@
 .ultimate-card {
     display: grid;
     grid-template-columns: 1fr 1.2fr;
+    grid-template-rows: minmax(0, 1fr);
+    /* CRITICAL: Forces children to respect height and scroll */
     background: #fff;
     height: 100%;
+    width: 100%;
     max-height: 85vh;
     border-radius: 44px;
     overflow: hidden;
@@ -332,7 +335,7 @@
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.18), transparent 60%),
+        radial-gradient(circle at 100% 100%, rgba(80, 80, 80, 0.12), transparent 60%),
         radial-gradient(circle at 0% 0%, rgba(236, 72, 153, 0.05), transparent 40%);
     pointer-events: none;
 }
@@ -340,18 +343,39 @@
 /* Studio Side (Pearl) */
 .studio-side {
     background: #fafafb;
-    padding: 3rem 4rem;
+    padding: 2.2rem 3.5rem;
+    /* Reduced padding */
     position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     overflow-y: auto;
+    max-height: 100%;
+}
+
+/* Custom Scrollbar for Studio Side */
+.studio-side::-webkit-scrollbar {
+    width: 6px;
+}
+
+.studio-side::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.studio-side::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+}
+
+.studio-side::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.1);
 }
 
 .f-progress {
     display: flex;
     gap: 0.6rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
+    /* Reduced from 1.5rem */
 }
 
 .p-bar {
@@ -367,10 +391,12 @@
 }
 
 .f-main-title {
-    font-size: 2rem;
+    font-size: 1.8rem;
+    /* Reduced from 2rem */
     font-weight: 1000;
     letter-spacing: -0.05em;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.2rem;
+    /* Reduced from 0.3rem */
     color: #000;
 }
 
@@ -383,17 +409,20 @@
 .studio-form {
     display: flex;
     flex-direction: column;
-    gap: 1.2rem;
+    gap: 0.9rem;
+    /* Reduced from 1.2rem */
     margin-top: 0.5rem;
 }
 
 .s-field-group label {
     display: block;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
+    /* Slightly smaller */
     font-weight: 1000;
     color: #bbb;
     letter-spacing: 0.12em;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.35rem;
+    /* Reduced from 0.5rem */
     padding-left: 0.4rem;
 }
 
@@ -413,11 +442,13 @@
 
 .s-input-wrap input {
     width: 100%;
-    padding: 1.1rem 1.4rem 1.1rem 3.5rem;
+    padding: 0.95rem 1.4rem 0.95rem 3.5rem;
+    /* Reduced vertical padding */
     background: #fff;
     border: 1.5px solid #edf1f4;
-    border-radius: 16px;
-    font-size: 0.95rem;
+    border-radius: 14px;
+    /* Slightly reduced radius */
+    font-size: 0.9rem;
     font-weight: 600;
     color: #000;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -629,6 +660,11 @@
     }
 }
 
+/* Default state: Hide mobile header on desktop */
+.mobile-brand-header {
+    display: none;
+}
+
 /* ========== TABLET & MOBILE ========== */
 @media (max-width: 1024px) {
     .register-page-v74 {
@@ -639,6 +675,13 @@
         overflow-x: hidden !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch;
+        background-color: #ffffff;
+        /* White background for seamless footer */
+    }
+
+    /* Hide background orbs to prevent pink space */
+    .site-aura {
+        display: none !important;
     }
 
     .layout-portal {
@@ -659,95 +702,180 @@
         height: auto !important;
         border: none !important;
         box-shadow: none !important;
+        overflow: visible !important;
+        /* Allow children to expand */
     }
 
-    /* CRUCIAL: Reorder - Form first, Hero second on mobile */
+    /* CRUCIAL: Reorder - Vault (Black) First, Studio (White) Second */
     .vault-side {
-        order: 2;
-        padding: 2rem 1.5rem !important;
+        order: 1;
+        /* TOP */
+        padding: 3rem 1.5rem 2rem !important;
+        /* Balanced padding */
         min-height: auto !important;
+        height: auto !important;
+        /* Force full expansion */
+        flex: none !important;
+        /* Prevent shrinking */
+        overflow: visible !important;
+        /* No internal scroll */
         text-align: center;
         display: flex;
         flex-direction: column;
         align-items: center;
+        background: #050505;
+        /* Removed border-radius/shadow for flat look */
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+
+    /* COMPACT HEADER: Hide non-essential elements on mobile to save space */
+    .v-description,
+    .v-perk-list,
+    .v-exit,
+    .v-tag {
+        display: none !important;
     }
 
     .studio-side {
-        order: 1;
-        padding: 2rem 1.5rem 2rem !important;
-        background: #fff;
+        order: 2;
+        /* BOTTOM */
+        padding: 2rem 1.5rem 3rem !important;
         min-height: auto !important;
+        height: auto !important;
+        /* Force full height */
+        flex: none !important;
+        /* Prevent shrinking */
+        overflow: visible !important;
+        /* No internal scroll */
+        background: #fff;
+        /* Removed overlap/margin for flat look */
+        margin-top: 0 !important;
     }
 
-    /* Compact vault header on mobile */
-    .vault-header {
-        margin-bottom: 1rem;
+    /* --- MOBILE BRAND HEADER CONFIG --- */
+    /* Hide the temporary white-side header, we use the main one in Vault now */
+    .mobile-brand-header {
+        display: none !important;
     }
+
+    /* Restore the original logo in the vault */
+    .vault-header {
+        display: block;
+        margin-bottom: 1.5rem;
+    }
+
+    /* ---------------------------------- */
 
     .portal-logo {
         justify-content: center;
-        margin-bottom: 1rem;
+        margin-bottom: 0;
     }
 
     .v-tag {
-        margin: 0 auto 1rem;
-        font-size: 0.6rem;
+        margin: 0 auto 1.5rem;
+        font-size: 0.7rem;
     }
 
     .v-main-title {
-        font-size: 1.8rem !important;
-        margin-bottom: 0.75rem;
+        font-size: 1.6rem !important;
+        /* Smaller title */
+        margin-bottom: 0.5rem;
+        line-height: 1.1;
     }
 
     .v-description {
-        font-size: 0.9rem;
-        margin: 0 auto 1.5rem !important;
+        font-size: 1rem;
+        margin: 0 auto 2rem !important;
+        line-height: 1.6;
     }
 
     .v-perk-list {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
-        align-items: center;
+        gap: 1.25rem;
+        align-items: flex-start;
+        /* Align left for readability */
         text-align: left;
-        max-width: 340px;
+        max-width: 100%;
         margin: 0 auto;
+        padding: 0 1rem;
     }
 
     .perk-item {
         gap: 1rem;
+        width: 100%;
     }
 
     .perk-icon-wrap {
-        width: 32px;
-        height: 32px;
+        width: 40px;
+        height: 40px;
         flex-shrink: 0;
     }
 
     .perk-text strong {
-        font-size: 0.85rem;
+        font-size: 0.95rem;
     }
 
     .perk-text span {
-        font-size: 0.75rem;
+        font-size: 0.85rem;
     }
 
     .v-exit {
-        margin-top: 1.5rem;
+        margin-top: 2.5rem;
         width: 100%;
-        max-width: 280px;
+        max-width: 100%;
         justify-content: center;
-        padding: 0.6rem 1rem;
-        font-size: 0.7rem;
+        padding: 1rem;
+        font-size: 0.8rem;
+    }
+
+    /* Improved Mobile Close Button - Brand Style */
+    .s-close-btn {
+        position: fixed !important;
+        /* Pin to viewport */
+        top: 2rem !important;
+        right: 1.5rem !important;
+        width: 42px !important;
+        height: 42px !important;
+        background: #fff !important;
+        /* Solid White like Logo Box */
+        border: none !important;
+        color: #000 !important;
+        /* Black Icon */
+        border-radius: 14px !important;
+        /* Squircle Brand Shape */
+        z-index: 2000 !important;
+        opacity: 1;
+        padding: 0;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+        /* Deep shadow */
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .s-close-btn:hover {
+        transform: translateY(-2px) rotate(90deg);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    /* Target the SVG icon inside if needed to scale it up */
+    .s-close-btn svg {
+        width: 20px;
+        height: 20px;
+        stroke-width: 2.5px;
+        /* Bolder icon */
     }
 
     .vault-footer {
         margin-top: 1rem;
+        width: 100%;
     }
 
     /* Studio side adjustments */
     .studio-header {
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
     }
 
     .f-progress {
@@ -755,45 +883,51 @@
     }
 
     .f-main-title {
-        font-size: 1.6rem !important;
-        margin-bottom: 0.25rem;
+        font-size: 1.8rem !important;
+        margin-bottom: 0.5rem;
     }
 
     .f-main-subtitle {
-        font-size: 0.9rem;
+        font-size: 1rem;
     }
 
     .studio-form {
-        gap: 1rem;
-        margin-top: 0.25rem;
+        gap: 1.2rem;
+        margin-top: 0.5rem;
     }
 
     .s-field-group label {
-        font-size: 0.7rem;
-        margin-bottom: 0.4rem;
+        font-size: 0.75rem;
+        margin-bottom: 0.5rem;
     }
 
+    /* Fix for iOS Zoom on inputs (Must be 16px) */
     .s-input-wrap input {
-        padding: 0.9rem 1.2rem 0.9rem 3rem !important;
-        font-size: 0.9rem;
+        padding: 1rem 1.2rem 1rem 3rem !important;
+        font-size: 16px !important;
+        /* Prevents zoom */
     }
 
     .s-submit-btn {
-        margin-top: 0.75rem;
-        padding: 1rem;
-        font-size: 0.9rem;
+        margin-top: 1rem;
+        padding: 1.1rem;
+        font-size: 1rem;
     }
 
     .studio-footer {
-        margin-top: 1.25rem;
-        font-size: 0.8rem;
+        margin-top: 2rem;
+        padding-bottom: 1rem;
+        font-size: 0.9rem;
     }
 
+    /* Move Close button to top right, relative to studio-side */
     .s-close-btn {
-        top: 1rem !important;
-        right: 1rem !important;
-        width: 36px !important;
-        height: 36px !important;
+        top: 1.5rem !important;
+        right: 1.5rem !important;
+        width: 40px !important;
+        height: 40px !important;
+        position: absolute;
+        z-index: 50;
     }
 }
 

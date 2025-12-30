@@ -31,19 +31,20 @@
 .search-bar-tab {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    background: #f5f5f5;
-    padding: 0.75rem 1.25rem;
-    border-radius: 12px;
-    width: 280px;
-    transition: all 0.3s ease;
+    gap: 1rem;
+    background: #fff;
+    border: 2px solid rgba(0, 0, 0, 0.06);
+    padding: 0 1.75rem;
+    border-radius: 20px;
+    width: 320px;
+    height: 64px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .search-bar-tab:focus-within {
-    background: #fff;
     border-color: #000;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-    width: 320px;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
 }
 
 .search-bar-tab input {
@@ -51,31 +52,26 @@
     background: transparent;
     outline: none;
     width: 100%;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-.filter-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    background: #f5f5f5;
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
-}
-
-.filter-icon {
-    color: #666;
-}
-
-.role-select {
-    border: none;
-    background: transparent;
-    outline: none;
-    font-size: 0.85rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #000;
-    cursor: pointer;
+}
+
+.search-bar-tab input::placeholder {
+    color: #aaa;
+}
+
+.search-bar-tab svg {
+    color: #888;
+    transition: color 0.3s;
+}
+
+.search-bar-tab:focus-within svg {
+    color: #000;
+}
+
+.filter-group {
+    min-width: 220px;
 }
 
 /* User Table Specifics */

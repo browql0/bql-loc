@@ -12,8 +12,11 @@ import {
     CheckCircle2,
     Clock,
     AlertCircle,
-    UserCircle
+    UserCircle,
+    Crown,
+    Users
 } from 'lucide-react';
+import PremiumSelect from '../owner/PremiumSelect';
 import './UsersTab.css';
 
 const UsersTab = () => {
@@ -64,6 +67,13 @@ const UsersTab = () => {
         fetchUsers();
     }, []);
 
+    const roleFilterOptions = [
+        { value: 'all', label: 'Tous les rôles' },
+        { value: 'superadmin', label: 'Superadmin' },
+        { value: 'owner', label: 'Gérant (Owner)' },
+        { value: 'staff', label: 'Personnel (Staff)' }
+    ];
+
     const filteredUsers = users.filter(user => {
         const matchesSearch =
             user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -104,18 +114,14 @@ const UsersTab = () => {
                         />
                     </div>
 
-                    <div className="filter-wrapper">
-                        <Filter size={18} className="filter-icon" />
-                        <select
+                    <div className="filter-group">
+                        <PremiumSelect
+                            options={roleFilterOptions}
                             value={roleFilter}
                             onChange={(e) => setRoleFilter(e.target.value)}
-                            className="role-select"
-                        >
-                            <option value="all">Tous les rôles</option>
-                            <option value="superadmin">Superadmin</option>
-                            <option value="owner">Gérant (Owner)</option>
-                            <option value="staff">Personnel (Staff)</option>
-                        </select>
+                            icon={Filter}
+                            placeholder="Filtrer par rôle"
+                        />
                     </div>
                 </div>
             </div>

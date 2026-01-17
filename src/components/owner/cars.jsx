@@ -164,9 +164,9 @@ const CarsTab = ({ agencyId }) => {
                                 </div>
                             </div>
                         </div>
-                    ))}
-                </div>
-            )}
+                    ))
+                )}
+            </div>
         </div>
     );
 };

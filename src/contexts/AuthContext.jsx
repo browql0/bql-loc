@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (session) {
                 setUser(session.user);
-                fetchUserRole(session.user.id);
+                fetchUserRole(session.user);
             } else {
                 setLoading(false);
             }
@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (session) {
                 setUser(session.user);
-                await fetchUserRole(session.user.id);
+                await fetchUserRole(session.user);
             } else {
                 setUser(null);
                 setUserRole(null);
@@ -42,11 +42,23 @@ export const AuthProvider = ({ children }) => {
         return () => subscription.unsubscribe();
     }, []);
 
-    const fetchUserRole = async (userId) => {
+    const fetchUserRole = async (userIdOrUser) => {
         try {
-            // First check metadata
-            const { data: { user } } = await supabase.auth.getUser();
-            let role = user?.user_metadata?.role;
+            let role;
+            let userId;
+
+            // Handle flexible input (ID string or User object)
+            if (typeof userIdOrUser === 'string') {
+                userId = userIdOrUser;
+                // Only fetch user if we don't have it locally or need fresh data
+                const { data: { user } } = await supabase.auth.getUser();
+                role = user?.user_metadata?.role;
+            } else if (userIdOrUser?.id) {
+                userId = userIdOrUser.id;
+                role = userIdOrUser.user_metadata?.role;
+            } else {
+                throw new Error('Invalid user data provided to fetchUserRole');
+            }
 
             // If no role in metadata, fetch from profiles
             if (!role) {
@@ -63,7 +75,7 @@ export const AuthProvider = ({ children }) => {
 
             setUserRole(role);
         } catch (error) {
-            // Silently handle role fetch errors
+            console.error('Error fetching user role:', error);
             setUserRole(null);
         } finally {
             setLoading(false);

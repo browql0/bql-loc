@@ -19,7 +19,7 @@ import './SuperAdminDashboard.css';
 import AgenciesTab from '../components/superadmin/AgenciesTab';
 import OverviewTab from '../components/superadmin/OverviewTab';
 import UsersTab from '../components/superadmin/UsersTab';
-import Settings from '../components/superadmin/Settings';
+import SettingsTab from '../components/superadmin/Settings';
 
 const SuperAdminDashboard = () => {
     const navigate = useNavigate();
@@ -101,9 +101,9 @@ const SuperAdminDashboard = () => {
                         </div>
                         <div className="header-search-global">
                             <Search size={18} aria-hidden="true" />
-                            <input 
-                                type="text" 
-                                placeholder="Recherche globale..." 
+                            <input
+                                type="text"
+                                placeholder="Recherche globale..."
                                 aria-label="Recherche globale"
                             />
                         </div>
@@ -135,7 +135,7 @@ const SuperAdminDashboard = () => {
                         {activeTab === 'overview' && <OverviewTab />}
                         {activeTab === 'agencies' && <AgenciesTab />}
                         {activeTab === 'users' && <UsersTab />}
-                        {activeTab === 'settings' && <Settings />}
+                        {activeTab === 'settings' && <SettingsTab />}
                     </div>
                 </div>
             </main>

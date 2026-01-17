@@ -4,7 +4,6 @@ import { supabase } from '../lib/supabase';
 import {
     Users,
     Car,
-    CreditCard,
     LayoutDashboard,
     LogOut,
     Menu,
@@ -14,49 +13,50 @@ import {
     ChevronRight,
     Command,
     Search,
-    HelpCircle
+    Calendar,
+    TrendingUp
 } from 'lucide-react';
-import StaffTab from '../components/owner/staff';
-import CarsTab from '../components/owner/cars';
-import ClientsTab from '../components/owner/ClientsTab';
-import PaymentTab from '../components/owner/Payment';
-import './OwnerDashboard.css';
+import StaffDashboardTab from '../components/staff/dashboard';
+import StaffCarsTab from '../components/staff/cars';
+import StaffClientsTab from '../components/staff/client';
+import './StaffDashboard.css';
 
-const OwnerDashboard = () => {
+const StaffDashboard = () => {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('staff');
+    const [activeTab, setActiveTab] = useState('dashboard');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [showNotifications, setShowNotifications] = useState(false);
     const [agencyId, setAgencyId] = useState(null);
+    const [userProfile, setUserProfile] = useState(null);
 
     useEffect(() => {
-        const fetchAgency = async () => {
+        const fetchUserData = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 const { data: profile } = await supabase
                     .from('profiles')
-                    .select('agency_id')
-                    .eq('id', user.id)
+                    .select('agency_id, full_name')
                     .eq('id', user.id)
                     .maybeSingle();
 
-                if (profile) setAgencyId(profile.agency_id);
+                if (profile) {
+                    setAgencyId(profile.agency_id);
+                    setUserProfile(profile);
+                }
             }
         };
-        fetchAgency();
+        fetchUserData();
     }, []);
 
     const notifications = [
-        { id: 1, title: 'Nouveau Staff', message: 'Amine Alaoui a rejoint l\'équipe.', time: 'Il y a 2 min', read: false },
-        { id: 2, title: 'Maintenance', message: 'La Mercedes G-Class est en révision.', time: 'Il y a 1h', read: true },
-        { id: 3, title: 'Paiement', message: 'Nouveau paiement de 2500 DH reçu.', time: 'Il y a 3h', read: true },
+        { id: 1, title: 'Nouvelle Réservation', message: 'Réservation confirmée pour Mercedes G-Class.', time: 'Il y a 5 min', read: false },
+        { id: 2, title: 'Client', message: 'Nouveau client enregistré.', time: 'Il y a 1h', read: true },
     ];
 
     const menuItems = [
-        { id: 'staff', label: 'Gestion Staff', icon: Users },
-        { id: 'cars', label: 'Flotte Automobile', icon: Car },
+        { id: 'dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
         { id: 'clients', label: 'Clients', icon: Users },
-        { id: 'payments', label: 'Historique Paiements', icon: CreditCard },
+        { id: 'cars', label: 'Véhicules', icon: Car },
     ];
 
     const getPageTitle = () => {
@@ -64,8 +64,13 @@ const OwnerDashboard = () => {
         return item ? item.label : 'Dashboard';
     };
 
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        navigate('/login');
+    };
+
     return (
-        <div className={`owner-dashboard ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+        <div className={`staff-dashboard ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
             {/* Sidebar */}
             <aside className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
                 <div className="sidebar-header">
@@ -87,7 +92,10 @@ const OwnerDashboard = () => {
                             <button
                                 key={item.id}
                                 className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
-                                onClick={() => setActiveTab(item.id)}
+                                onClick={() => {
+                                    setActiveTab(item.id);
+                                    if (window.innerWidth <= 1024) setIsSidebarOpen(false);
+                                }}
                             >
                                 <item.icon size={20} />
                                 <span>{item.label}</span>
@@ -101,10 +109,7 @@ const OwnerDashboard = () => {
                             <Settings size={20} />
                             <span>Paramètres</span>
                         </button>
-                        <button className="nav-item logout" onClick={async () => {
-                            await supabase.auth.signOut();
-                            navigate('/login');
-                        }}>
+                        <button className="nav-item logout" onClick={handleLogout}>
                             <LogOut size={20} />
                             <span>Déconnexion</span>
                         </button>
@@ -116,9 +121,9 @@ const OwnerDashboard = () => {
             <main className="main-content">
                 <header className="content-header">
                     <div className="header-left">
-                        {  /*  <button className="menu-toggle" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+                        <button className="menu-toggle" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
                             <Menu size={24} />
-                        </button>*/ }
+                        </button>
                         <div className="header-title-container">
                             <h1>{getPageTitle()}</h1>
                             <div className="vertical-divider"></div>
@@ -136,7 +141,7 @@ const OwnerDashboard = () => {
                     <div className="header-right">
                         <div className="header-status-pill">
                             <span className="dot pulse"></span>
-                            Live System
+                            En ligne
                         </div>
                         <div className="notification-wrapper">
                             <button
@@ -144,7 +149,7 @@ const OwnerDashboard = () => {
                                 onClick={() => setShowNotifications(!showNotifications)}
                             >
                                 <Bell size={22} />
-                                <span className="notif-badge-new">3</span>
+                                <span className="notif-badge-new">{notifications.filter(n => !n.read).length}</span>
                             </button>
 
                             {showNotifications && (
@@ -176,12 +181,14 @@ const OwnerDashboard = () => {
                         </div>
                         <div className="user-profile-premium">
                             <div className="user-avatar-wrap">
-                                <div className="user-avatar">AD</div>
+                                <div className="user-avatar">
+                                    {userProfile?.full_name ? userProfile.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'ST'}
+                                </div>
                                 <div className="status-indicator online"></div>
                             </div>
                             <div className="user-info">
-                                <span className="user-name">Propriétaire</span>
-                                <span className="user-role">Premium Agency</span>
+                                <span className="user-name">{userProfile?.full_name || 'Staff'}</span>
+                                <span className="user-role">Équipe</span>
                             </div>
                         </div>
                     </div>
@@ -189,10 +196,9 @@ const OwnerDashboard = () => {
 
                 <div className="tab-container">
                     <div className="glass-panel">
-                        {activeTab === 'staff' && <StaffTab agencyId={agencyId} />}
-                        {activeTab === 'cars' && <CarsTab />}
-                        {activeTab === 'clients' && <ClientsTab />}
-                        {activeTab === 'payments' && <PaymentTab />}
+                        {activeTab === 'dashboard' && <StaffDashboardTab agencyId={agencyId} />}
+                        {activeTab === 'clients' && <StaffClientsTab agencyId={agencyId} />}
+                        {activeTab === 'cars' && <StaffCarsTab agencyId={agencyId} />}
                     </div>
                 </div>
             </main>
@@ -200,4 +206,5 @@ const OwnerDashboard = () => {
     );
 };
 
-export default OwnerDashboard;
+export default StaffDashboard;
+

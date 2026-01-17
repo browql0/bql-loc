@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
     Command, Clock, Shield, ArrowLeft, LogOut, Sparkles, CheckCircle2, XCircle, Loader2
 } from 'lucide-react';
 import './PendingApproval.css';
 
-const PendingApproval = ({ navigate }) => {
+const PendingApproval = () => {
+    const navigate = useNavigate();
     const [showModal, setShowModal] = useState(false);
     const [modalContent, setModalContent] = useState({ type: '', message: '' });
     const [isChecking, setIsChecking] = useState(false);
@@ -17,9 +19,9 @@ const PendingApproval = ({ navigate }) => {
     const handleLogout = async () => {
         try {
             await supabase.auth.signOut();
-            navigate('home');
+            navigate('/');
         } catch (error) {
-            console.error('Logout error:', error);
+            // Silently handle logout errors, navigate anyway
         }
     };
 
@@ -47,7 +49,7 @@ const PendingApproval = ({ navigate }) => {
                         }
                     } catch (profileError) {
                         // Silently handle profile fetch errors (e.g., RLS issues)
-                        console.log('Could not fetch profile, using metadata role');
+                        // Will use metadata role if available
                     }
                 }
 
@@ -61,7 +63,7 @@ const PendingApproval = ({ navigate }) => {
 
                     setTimeout(() => {
                         if (userRole === 'owner') {
-                            navigate('owner/dashboard');
+                            navigate('/owner/dashboard');
                         } else if (userRole === 'superadmin') {
                             navigate('/superadmin/dashboard');
                         } else if (userRole === 'staff') {
@@ -77,10 +79,9 @@ const PendingApproval = ({ navigate }) => {
                 }
             }
         } catch (error) {
-            console.error('Error checking role:', error);
             setModalContent({
                 type: 'error',
-                message: 'Erreur lors de la vérification du statut. Veuillez réessayer.'
+                message: error?.message || 'Erreur lors de la vérification du statut. Veuillez réessayer.'
             });
             setShowModal(true);
         } finally {
@@ -105,7 +106,7 @@ const PendingApproval = ({ navigate }) => {
                 <div className="pending-card">
                     {/* Header */}
                     <div className="pending-header">
-                        <div className="portal-logo" onClick={() => navigate('home')}>
+                        <div className="portal-logo" onClick={() => navigate('/')}>
                             <div className="logo-box"><Command size={20} /></div>
                             <span>BQL RENT SYSTEMS</span>
                         </div>
@@ -179,7 +180,7 @@ const PendingApproval = ({ navigate }) => {
                     </div>
 
                     {/* Back button */}
-                    <button className="btn-back" onClick={() => navigate('home')}>
+                    <button className="btn-back" onClick={() => navigate('/')}>
                         <ArrowLeft size={16} />
                         <span>Retour à l'Accueil</span>
                     </button>

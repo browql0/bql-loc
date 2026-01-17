@@ -9,11 +9,15 @@ import {
     Fuel,
     Users as UsersIcon,
     ChevronRight,
-    Filter
+    Filter,
+    Car as CarIcon
 } from 'lucide-react';
 import './cars.css';
 import AddCarModal from './AddCarModal';
 import EditCarModal from './EditCarModal';
+import ErrorMessage from '../ErrorMessage';
+import EmptyState from '../EmptyState';
+import LoadingSpinner from '../LoadingSpinner';
 
 const CarsTab = ({ agencyId }) => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -22,6 +26,7 @@ const CarsTab = ({ agencyId }) => {
     const [editingCar, setEditingCar] = useState(null);
     const [cars, setCars] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     const fetchCars = async () => {
         try {
@@ -42,7 +47,9 @@ const CarsTab = ({ agencyId }) => {
             if (error) throw error;
             setCars(data || []);
         } catch (error) {
-            console.error('Error fetching cars:', error);
+            const errorMessage = error?.message || 'Erreur lors du chargement de la flotte.';
+            setError(errorMessage);
+            setCars([]);
         } finally {
             setLoading(false);
         }
@@ -157,9 +164,9 @@ const CarsTab = ({ agencyId }) => {
                                 </div>
                             </div>
                         </div>
-                    ))
-                )}
-            </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };

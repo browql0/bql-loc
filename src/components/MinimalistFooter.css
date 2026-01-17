@@ -181,3 +181,14 @@
         gap: 1rem;
     }
 }
+
+/* ========== SMALL DESKTOP OPTIMIZATION ========== */
+@media (min-width: 1025px) and (max-width: 1280px) {
+    .mini-footer {
+        padding: 55px 1.5rem 28px;
+    }
+
+    .footer-content {
+        gap: 3.5rem;
+    }
+}

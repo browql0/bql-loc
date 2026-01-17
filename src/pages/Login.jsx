@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
     Mail, Lock, ArrowRight, ArrowLeft,
@@ -7,7 +8,8 @@ import {
 } from 'lucide-react';
 import './Login.css';
 
-const Login = ({ navigate }) => {
+const Login = () => {
+    const navigate = useNavigate();
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -30,12 +32,22 @@ const Login = ({ navigate }) => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        
+        if (loading) return; // Prevent double submission
+        
         setLoading(true);
         setError(null);
 
         try {
+            // Validate email format
+            if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+                setError('Email invalide');
+                setLoading(false);
+                return;
+            }
+
             const { data, error } = await supabase.auth.signInWithPassword({
-                email: formData.email,
+                email: formData.email.trim(),
                 password: formData.password,
             });
 
@@ -59,24 +71,25 @@ const Login = ({ navigate }) => {
 
             // Check if user has a role assigned
             if (!role) {
-                navigate('pending-approval');
+                navigate('/pending-approval');
                 return;
             }
 
             if (role === 'owner') {
-                navigate('owner/dashboard');
+                navigate('/owner/dashboard');
             } else if (role === 'superadmin') {
                 navigate('/superadmin/dashboard');
             } else if (role === 'staff') {
                 navigate('/staff/dashboard');
             } else {
                 // Unknown role, redirect to pending approval
-                navigate('pending-approval');
+                navigate('/pending-approval');
             }
 
         } catch (err) {
-            setError(err.message);
-            alert('Login failed: ' + err.message);
+            const errorMessage = err.message || 'Erreur de connexion. Vérifiez vos identifiants.';
+            setError(errorMessage);
+            // Don't use alert, error is already shown in UI
         } finally {
             setLoading(false);
         }
@@ -84,7 +97,7 @@ const Login = ({ navigate }) => {
 
     const handleNavigateToRegister = (e) => {
         e.preventDefault();
-        navigate('register');
+        navigate('/register');
     };
 
     // Temporary helper to create superadmin
@@ -127,7 +140,7 @@ const Login = ({ navigate }) => {
                     {/* Visual Side: The Obsidian Vault */}
                     <div className="vault-side">
                         <div className="vault-header">
-                            <div className="portal-logo" onClick={() => navigate('home')}>
+                            <div className="portal-logo" onClick={() => navigate('/')}>
                                 <div className="logo-box"><Command size={20} /></div>
                                 <span style={{ color: 'white' }}>BQL RENT SYSTEMS</span>
                             </div>
@@ -244,9 +257,9 @@ const Login = ({ navigate }) => {
                                 </label>
                             </div>
 
-                            <button type="submit" className="s-submit-btn">
-                                <span>OUVRIR LA SESSION</span>
-                                <ArrowRight size={20} className="s-arrow" />
+                            <button type="submit" className="s-submit-btn" disabled={loading}>
+                                <span>{loading ? 'CONNEXION...' : 'OUVRIR LA SESSION'}</span>
+                                {!loading && <ArrowRight size={20} className="s-arrow" />}
                             </button>
                         </form>
 
@@ -254,7 +267,7 @@ const Login = ({ navigate }) => {
                             <p>PAS ENCORE D'ESPACE ? <a href="#" onClick={handleNavigateToRegister}>CRÉER UN COMPTE</a></p>
                         </div>
 
-                        <button className="s-close-btn" onClick={() => navigate('home')}>
+                        <button className="s-close-btn" onClick={() => navigate('/')}>
                             <X size={20} />
                         </button>
                     </div>

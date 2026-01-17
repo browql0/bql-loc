@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
     Users,
@@ -18,28 +19,13 @@ import './SuperAdminDashboard.css';
 import AgenciesTab from '../components/superadmin/AgenciesTab';
 import OverviewTab from '../components/superadmin/OverviewTab';
 import UsersTab from '../components/superadmin/UsersTab';
+import Settings from '../components/superadmin/Settings';
 
-const SuperAdminDashboard = ({ navigate }) => {
+const SuperAdminDashboard = () => {
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('overview');
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [showNotifications, setShowNotifications] = useState(false);
-
-    // Placeholder for data
-    const [stats, setStats] = useState({
-        totalAgencies: 0,
-        totalRevenue: 0,
-        activeUsers: 0
-    });
-
-    useEffect(() => {
-        // Fetch global stats would go here
-        // For now, static or Mock
-        setStats({
-            totalAgencies: 12,
-            totalRevenue: 450000,
-            activeUsers: 156
-        });
-    }, []);
 
     const menuItems = [
         { id: 'overview', label: 'Vue d\'ensemble', icon: LayoutDashboard },
@@ -55,7 +41,7 @@ const SuperAdminDashboard = ({ navigate }) => {
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
-        navigate('login');
+        navigate('/login');
     };
 
     return (
@@ -114,8 +100,12 @@ const SuperAdminDashboard = ({ navigate }) => {
                             <div className="vertical-divider"></div>
                         </div>
                         <div className="header-search-global">
-                            <Search size={18} />
-                            <input type="text" placeholder="Recherche globale..." />
+                            <Search size={18} aria-hidden="true" />
+                            <input 
+                                type="text" 
+                                placeholder="Recherche globale..." 
+                                aria-label="Recherche globale"
+                            />
                         </div>
                     </div>
 
@@ -145,11 +135,7 @@ const SuperAdminDashboard = ({ navigate }) => {
                         {activeTab === 'overview' && <OverviewTab />}
                         {activeTab === 'agencies' && <AgenciesTab />}
                         {activeTab === 'users' && <UsersTab />}
-                        {activeTab === 'settings' && (
-                            <div>
-                                <h2>Paramètres Globaux</h2>
-                            </div>
-                        )}
+                        {activeTab === 'settings' && <Settings />}
                     </div>
                 </div>
             </main>

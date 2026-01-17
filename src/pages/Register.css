@@ -660,6 +660,38 @@
     }
 }
 
+/* ========== SMALL DESKTOP OPTIMIZATION ========== */
+@media (min-width: 1025px) and (max-width: 1440px) {
+    .layout-portal {
+        max-width: 95%;
+    }
+
+    .ultimate-card {
+        width: 950px;
+        max-width: 100%;
+    }
+
+    .vault-side {
+        padding: 2.5rem 2rem;
+    }
+
+    .studio-side {
+        padding: 2rem 2.5rem;
+    }
+
+    .v-main-title {
+        font-size: 2.5rem;
+    }
+
+    .f-main-title {
+        font-size: 1.6rem;
+    }
+
+    .s-input-wrap input {
+        padding: 0.85rem 1.2rem 0.85rem 3.2rem;
+    }
+}
+
 /* Default state: Hide mobile header on desktop */
 .mobile-brand-header {
     display: none;

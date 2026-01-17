@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 import {
@@ -10,7 +11,8 @@ import './Register.css';
 import './PhoneInput.css';
 import './RegisterFooter.css';
 
-const Register = ({ navigate }) => {
+const Register = () => {
+    const navigate = useNavigate();
 
     const [notification, setNotification] = useState(null);
     const [phonePrefix, setPhonePrefix] = useState('+212'); // Default Morocco
@@ -18,6 +20,7 @@ const Register = ({ navigate }) => {
     const [showPrefixDropdown, setShowPrefixDropdown] = useState(false);
     const [prefixSearch, setPrefixSearch] = useState('');
     const [phoneError, setPhoneError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -83,6 +86,9 @@ const Register = ({ navigate }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (isSubmitting) return; // Prevent double submission
+        
         setNotification(null);
 
         // Validate phone
@@ -90,17 +96,51 @@ const Register = ({ navigate }) => {
             return;
         }
 
+        // Validate other fields
+        if (!formData.name.trim()) {
+            setNotification({
+                message: 'Le nom est requis',
+                type: 'error'
+            });
+            return;
+        }
+
+        if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+            setNotification({
+                message: 'Email invalide',
+                type: 'error'
+            });
+            return;
+        }
+
+        if (!formData.agencyName.trim()) {
+            setNotification({
+                message: 'Le nom de l\'agence est requis',
+                type: 'error'
+            });
+            return;
+        }
+
+        if (formData.password.length < 6) {
+            setNotification({
+                message: 'Le mot de passe doit contenir au moins 6 caractères',
+                type: 'error'
+            });
+            return;
+        }
+
+        setIsSubmitting(true);
         const fullPhone = phonePrefix + phoneNumber.replace(/\D/g, '');
 
         try {
             const { data, error } = await supabase.auth.signUp({
-                email: formData.email,
+                email: formData.email.trim(),
                 password: formData.password,
                 options: {
                     data: {
-                        full_name: formData.name,
-                        agency_name: formData.agencyName,
-                        phone: fullPhone
+                        full_name: formData.name.trim().substring(0, 100),
+                        agency_name: formData.agencyName.trim().substring(0, 100),
+                        phone: fullPhone.substring(0, 20)
                     }
                 }
             });
@@ -108,15 +148,14 @@ const Register = ({ navigate }) => {
             if (data.user) {
                 // Call the secure RPC function to create agency and profile
                 const { error: rpcError } = await supabase.rpc('create_agency_and_admin', {
-                    agency_name_input: formData.agencyName,
-                    owner_name_input: formData.name,
-                    owner_email_input: formData.email,
-                    owner_phone_input: fullPhone
+                    agency_name_input: formData.agencyName.trim().substring(0, 100),
+                    owner_name_input: formData.name.trim().substring(0, 100),
+                    owner_email_input: formData.email.trim().substring(0, 255),
+                    owner_phone_input: fullPhone.substring(0, 20)
                 });
 
                 if (rpcError) {
-                    console.error("Error creating agency/profile:", rpcError);
-                    // Critical error handling here if needed
+                    throw new Error(rpcError.message || 'Erreur lors de la création du compte');
                 }
             }
 
@@ -128,14 +167,16 @@ const Register = ({ navigate }) => {
             });
 
             setTimeout(() => {
-                navigate('pending-approval');
+                navigate('/pending-approval');
             }, 1500);
 
         } catch (error) {
             setNotification({
-                message: 'Erreur : ' + error.message,
+                message: 'Erreur : ' + (error.message || 'Une erreur est survenue'),
                 type: 'error'
             });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -175,7 +216,7 @@ const Register = ({ navigate }) => {
                     {/* Visual Side: The Obsidian Vault */}
                     <div className="vault-side">
                         <div className="vault-header">
-                            <div className="portal-logo" onClick={() => navigate('home')}>
+                            <div className="portal-logo" onClick={() => navigate('/')}>
                                 <div className="logo-box"><Command size={20} /></div>
                                 <span style={{ color: 'white' }}>BQL RENT SYSTEMS</span>
                             </div>
@@ -374,18 +415,18 @@ const Register = ({ navigate }) => {
                                 </div>
                             </div>
 
-                            <button type="submit" className="s-submit-btn">
-                                <span>CRÉER MON ESPACE AGENT</span>
-                                <ArrowRight size={20} className="s-arrow" />
+                            <button type="submit" className="s-submit-btn" disabled={isSubmitting}>
+                                <span>{isSubmitting ? 'CRÉATION EN COURS...' : 'CRÉER MON ESPACE AGENT'}</span>
+                                {!isSubmitting && <ArrowRight size={20} className="s-arrow" />}
                             </button>
                         </form>
 
                         <div className="studio-footer">
-                            <p>DÉJÀ ENREGISTRÉ ? <a href="#" onClick={(e) => { e.preventDefault(); navigate('login'); }}>SE CONNECTER</a></p>
+                            <p>DÉJÀ ENREGISTRÉ ? <a href="#" onClick={(e) => { e.preventDefault(); navigate('/login'); }}>SE CONNECTER</a></p>
                         </div>
 
                         {/* Refined floating close button */}
-                        <button className="s-close-btn" onClick={() => navigate('home')}>
+                        <button className="s-close-btn" onClick={() => navigate('/')}>
                             <X size={20} />
                         </button>
                     </div>

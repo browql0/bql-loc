@@ -8,10 +8,12 @@ import {
     CreditCard,
     ArrowUpRight,
     MoreVertical,
-    Filter
+    Filter,
+    AlertCircle
 } from 'lucide-react';
 import './Payment.css';
 import { supabase } from '../../lib/supabase';
+import ErrorMessage from '../ErrorMessage';
 
 const PaymentTab = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -24,6 +26,7 @@ const PaymentTab = () => {
 
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchTransactions = async () => {
@@ -46,7 +49,9 @@ const PaymentTab = () => {
                     })));
                 }
             } catch (error) {
-                console.error("Error fetching payments:", error);
+                const errorMessage = error?.message || 'Erreur lors du chargement des transactions.';
+                setError(errorMessage);
+                setTransactions([]);
             } finally {
                 setLoading(false);
             }
@@ -87,6 +92,15 @@ const PaymentTab = () => {
                     </div>
                 ))}
             </div>
+
+            {error && (
+                <ErrorMessage 
+                    message={error} 
+                    onDismiss={() => setError(null)}
+                    retry={fetchTransactions}
+                    retryLabel="Réessayer"
+                />
+            )}
 
             <div className="table-container glass-table">
                 <div className="table-actions">
@@ -141,6 +155,16 @@ const PaymentTab = () => {
                         </tbody>
                     </table>
                 </div>
+                {!loading && transactions.length === 0 && !error && (
+                    <div className="empty-state" style={{
+                        padding: '3rem',
+                        textAlign: 'center',
+                        color: '#94a3b8'
+                    }}>
+                        <CreditCard size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                        <p>Aucune transaction trouvée.</p>
+                    </div>
+                )}
             </div>
         </div>
     );

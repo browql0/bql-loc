@@ -15,6 +15,9 @@ import {
 import AddStaffModal from './AddStaffModal';
 import EditStaffModal from './EditStaffModal';
 import PremiumSelect from './PremiumSelect';
+import ErrorMessage from '../ErrorMessage';
+import EmptyState from '../EmptyState';
+import LoadingSpinner from '../LoadingSpinner';
 import './staff.css';
 
 const StaffTab = ({ agencyId }) => {
@@ -25,6 +28,7 @@ const StaffTab = ({ agencyId }) => {
     const [selectedStaffRole, setSelectedStaffRole] = useState('Tous les rôles');
     const [staffMembers, setStaffMembers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     const handleDelete = async (id) => {
         if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce membre ? (Cela ne supprime pas encore le compte Auth, mais retire l\'accès au dashboard)')) return;
@@ -34,8 +38,10 @@ const StaffTab = ({ agencyId }) => {
             if (error) throw error;
             setStaffMembers(prev => prev.filter(member => member.id !== id));
         } catch (error) {
-            console.error('Error deleting staff:', error);
-            alert('Erreur lors de la suppression.');
+            const errorMessage = error?.message || 'Erreur lors de la suppression.';
+            if (window.confirm(`Erreur: ${errorMessage}\n\nVoulez-vous réessayer?`)) {
+                handleDelete(id);
+            }
         }
     };
 
@@ -51,7 +57,9 @@ const StaffTab = ({ agencyId }) => {
             if (error) throw error;
             setStaffMembers(data || []);
         } catch (error) {
-            console.error('Error fetching staff:', error);
+            const errorMessage = error?.message || 'Erreur lors du chargement des membres du staff.';
+            setError(errorMessage);
+            setStaffMembers([]);
         } finally {
             setLoading(false);
         }
@@ -119,8 +127,30 @@ const StaffTab = ({ agencyId }) => {
                 </div>
             </div>
 
-            <div className="staff-grid">
-                {loading ? <div style={{ color: 'white' }}>Chargement...</div> : filteredStaff.map((staff) => {
+            {error && (
+                <ErrorMessage 
+                    message={error} 
+                    onDismiss={() => setError(null)}
+                    retry={fetchStaff}
+                    retryLabel="Réessayer"
+                />
+            )}
+
+            {loading ? (
+                <LoadingSpinner message="Chargement des membres du staff..." />
+            ) : filteredStaff.length === 0 ? (
+                <EmptyState
+                    icon={User}
+                    title={searchTerm || selectedStaffRole !== 'Tous les rôles' ? 'Aucun résultat' : 'Aucun membre du staff'}
+                    message={searchTerm || selectedStaffRole !== 'Tous les rôles' 
+                        ? 'Aucun membre ne correspond à vos critères de recherche.' 
+                        : 'Commencez par ajouter un membre à votre équipe.'}
+                    actionLabel="Ajouter un membre"
+                    onAction={() => setShowAddModal(true)}
+                />
+            ) : (
+                <div className="staff-grid">
+                    {filteredStaff.map((staff) => {
                     const initials = (staff.email || 'User').substring(0, 2).toUpperCase();
 
                     return (
@@ -168,8 +198,9 @@ const StaffTab = ({ agencyId }) => {
                             </div>
                         </div>
                     );
-                })}
-            </div>
+                    })}
+                </div>
+            )}
         </div>
     );
 };

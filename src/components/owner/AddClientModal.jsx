@@ -41,8 +41,8 @@ const AddClientModal = ({ isOpen, onClose, onSuccess }) => {
             setFormData({ name: '', email: '', phone: '' });
             onClose();
         } catch (error) {
-            console.error(error);
-            alert('Erreur: ' + error.message);
+            const errorMessage = error?.message || 'Erreur lors de l\'ajout du client.';
+            alert(`Erreur: ${errorMessage}`);
         } finally {
             setLoading(false);
         }

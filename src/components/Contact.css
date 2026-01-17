@@ -241,6 +241,21 @@
     margin-top: 1.5rem;
 }
 
+/* ========== SMALL DESKTOP OPTIMIZATION ========== */
+@media (min-width: 1025px) and (max-width: 1280px) {
+    .contact-section {
+        padding: 100px 1.5rem;
+    }
+
+    .contact-visual {
+        padding: 3.5rem;
+    }
+
+    .contact-form-wrapper {
+        padding: 4rem 3rem;
+    }
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .contact-card {
@@ -363,6 +378,45 @@
         font-size: 1.1rem;
         box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
         margin-top: 1rem;
+    }
+
+    .contact-submit-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .contact-status-message {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 1.25rem;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+        animation: slideDown 0.3s ease;
+    }
+
+    .contact-status-message.success {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: #10b981;
+    }
+
+    .contact-status-message.error {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #ef4444;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .contact-social {

@@ -17,11 +17,15 @@ import {
     Users
 } from 'lucide-react';
 import PremiumSelect from '../owner/PremiumSelect';
+import ErrorMessage from '../ErrorMessage';
+import EmptyState from '../EmptyState';
+import LoadingSpinner from '../LoadingSpinner';
 import './UsersTab.css';
 
 const UsersTab = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
 
@@ -57,7 +61,9 @@ const UsersTab = () => {
 
             setUsers(formatted);
         } catch (error) {
-            console.error('Error fetching users:', error);
+            const errorMessage = error?.message || 'Erreur lors du chargement des utilisateurs.';
+            setError(errorMessage);
+            setUsers([]);
         } finally {
             setLoading(false);
         }
@@ -126,17 +132,26 @@ const UsersTab = () => {
                 </div>
             </div>
 
+            {error && (
+                <ErrorMessage 
+                    message={error} 
+                    onDismiss={() => setError(null)}
+                    retry={fetchUsers}
+                    retryLabel="Réessayer"
+                />
+            )}
+
             <div className="table-container">
                 {loading ? (
-                    <div className="tab-loading">
-                        <div className="loading-spinner"></div>
-                        <span>Chargement des utilisateurs...</span>
-                    </div>
+                    <LoadingSpinner message="Chargement des utilisateurs..." />
                 ) : filteredUsers.length === 0 ? (
-                    <div className="empty-state">
-                        <UserCircle size={48} />
-                        <p>Aucun utilisateur trouvé.</p>
-                    </div>
+                    <EmptyState
+                        icon={UserCircle}
+                        title={searchTerm || roleFilter !== 'all' ? 'Aucun utilisateur trouvé' : 'Aucun utilisateur'}
+                        message={searchTerm || roleFilter !== 'all' 
+                            ? 'Aucun utilisateur ne correspond à vos critères de recherche.' 
+                            : 'Aucun utilisateur enregistré dans le système.'}
+                    />
                 ) : (
                     <table className="modern-table">
                         <thead>

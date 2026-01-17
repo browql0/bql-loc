@@ -13,11 +13,15 @@ import {
 import './clients.css';
 import AddClientModal from './AddClientModal';
 import EditClientModal from './EditClientModal';
+import ErrorMessage from '../ErrorMessage';
+import EmptyState from '../EmptyState';
+import LoadingSpinner from '../LoadingSpinner';
 
 const ClientsTab = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedClient, setSelectedClient] = useState(null);
@@ -33,7 +37,9 @@ const ClientsTab = () => {
             if (error) throw error;
             setClients(data || []);
         } catch (error) {
-            console.error('Error fetching clients:', error);
+            const errorMessage = error?.message || 'Erreur lors du chargement des clients.';
+            setError(errorMessage);
+            setClients([]);
         } finally {
             setLoading(false);
         }
@@ -53,7 +59,8 @@ const ClientsTab = () => {
             await supabase.from('clients').delete().eq('id', id);
             fetchClients();
         } catch (error) {
-            console.error(error);
+            const errorMessage = error?.message || 'Erreur lors de la suppression.';
+            alert(`Erreur: ${errorMessage}`);
         }
     };
 
@@ -119,8 +126,30 @@ const ClientsTab = () => {
                 />
             </div>
 
-            <div className="clients-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                {loading ? <div style={{ color: 'white' }}>Chargement...</div> : filteredClients.map(client => (
+            {error && (
+                <ErrorMessage 
+                    message={error} 
+                    onDismiss={() => setError(null)}
+                    retry={fetchClients}
+                    retryLabel="Réessayer"
+                />
+            )}
+
+            {loading ? (
+                <LoadingSpinner message="Chargement des clients..." />
+            ) : filteredClients.length === 0 ? (
+                <EmptyState
+                    icon={User}
+                    title={searchTerm ? 'Aucun client trouvé' : 'Aucun client enregistré'}
+                    message={searchTerm 
+                        ? 'Aucun client ne correspond à votre recherche.' 
+                        : 'Commencez par ajouter votre premier client.'}
+                    actionLabel="Ajouter un client"
+                    onAction={() => setIsAddModalOpen(true)}
+                />
+            ) : (
+                <div className="clients-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                    {filteredClients.map(client => (
                     <div key={client.id} style={{
                         background: 'rgba(30, 41, 59, 0.7)',
                         borderRadius: '16px',
@@ -174,8 +203,9 @@ const ClientsTab = () => {
                             )}
                         </div>
                     </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };

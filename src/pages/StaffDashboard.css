@@ -1,0 +1,39 @@
+@import url('../pages/OwnerDashboard.css');
+
+.staff-dashboard {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    display: flex;
+    position: relative;
+}
+
+.staff-dashboard .sidebar {
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    width: 280px;
+    min-height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 100;
+    transition: transform 0.3s ease;
+}
+
+.staff-dashboard .main-content {
+    flex: 1;
+    margin-left: 280px;
+    min-height: 100vh;
+    transition: margin-left 0.3s ease;
+}
+
+@media (max-width: 1024px) {
+    .staff-dashboard .sidebar.closed {
+        transform: translateX(-100%);
+    }
+    
+    .staff-dashboard .main-content {
+        margin-left: 0;
+    }
+}
+

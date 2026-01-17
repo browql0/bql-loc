@@ -329,6 +329,22 @@
     transform: translateY(-3px);
 }
 
+/* ========== SMALL DESKTOP OPTIMIZATION ========== */
+@media (min-width: 1025px) and (max-width: 1280px) {
+    .staff-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .staff-card {
+        padding: 2rem;
+    }
+
+    .header-info h2 {
+        font-size: 2rem;
+    }
+}
+
 @media (max-width: 1024px) {
     .staff-grid {
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

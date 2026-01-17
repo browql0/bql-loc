@@ -60,8 +60,8 @@ const EditAgencyModal = ({ isOpen, onClose, onSuccess, agencyData }) => {
             if (onSuccess) onSuccess();
             onClose();
         } catch (error) {
-            console.error(error);
-            alert('Erreur: ' + error.message);
+            const errorMessage = error?.message || 'Erreur lors de la mise à jour de l\'agence.';
+            alert(`Erreur: ${errorMessage}`);
         } finally {
             setLoading(false);
         }

@@ -202,6 +202,22 @@
     }
 }
 
+/* ========== SMALL DESKTOP OPTIMIZATION ========== */
+@media (min-width: 1025px) and (max-width: 1280px) {
+    .mini-hero {
+        padding: 110px 1.5rem 70px;
+    }
+
+    .hero-subtitle {
+        max-width: 580px;
+    }
+
+    .hero-stats {
+        gap: 2.5rem;
+        max-width: 650px;
+    }
+}
+
 @media (max-width: 768px) {
     .mini-hero {
         padding: 120px 1.5rem 60px;

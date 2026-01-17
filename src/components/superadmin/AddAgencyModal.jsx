@@ -62,8 +62,8 @@ const AddAgencyModal = ({ isOpen, onClose, onSuccess }) => {
             });
             onClose();
         } catch (error) {
-            console.error(error);
-            alert('Erreur: ' + error.message);
+            const errorMessage = error?.message || 'Erreur lors de l\'ajout de l\'agence.';
+            alert(`Erreur: ${errorMessage}`);
         } finally {
             setLoading(false);
         }

@@ -104,8 +104,8 @@ const AddCarModal = ({ isOpen, onClose }) => {
             setCurrentStep(1);
 
         } catch (error) {
-            console.error('Error adding car:', error);
-            alert('Erreur: ' + error.message);
+            const errorMessage = error?.message || 'Erreur lors de l\'ajout du véhicule.';
+            alert(`Erreur: ${errorMessage}`);
         }
     };
 

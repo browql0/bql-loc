@@ -1,9 +1,10 @@
 import React from 'react';
-
+import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Zap } from 'lucide-react';
 import './MinimalistHero.css';
 
-const MinimalistHero = ({ navigate }) => {
+const MinimalistHero = () => {
+    const navigate = useNavigate();
 
     return (
         <section className="mini-hero" id="home">
@@ -29,10 +30,25 @@ const MinimalistHero = ({ navigate }) => {
                 </p>
 
                 <div className="hero-actions animate-fade-in-up">
-                    <button className="btn-hero-primary" onClick={() => navigate('register')}>
-                        Démarrer gratuitement <ArrowRight size={18} />
+                    <button 
+                        className="btn-hero-primary" 
+                        onClick={() => navigate('/register')}
+                        aria-label="Créer un compte et démarrer"
+                    >
+                        Démarrer gratuitement <ArrowRight size={18} aria-hidden="true" />
                     </button>
-                    <button className="btn-hero-secondary" onClick={() => navigate('contact')}>Contactez-nous</button>
+                    <button 
+                        className="btn-hero-secondary" 
+                        onClick={() => {
+                            const contactSection = document.getElementById('contact');
+                            if (contactSection) {
+                                contactSection.scrollIntoView({ behavior: 'smooth' });
+                            }
+                        }}
+                        aria-label="Aller à la section contact"
+                    >
+                        Contactez-nous
+                    </button>
                 </div>
 
                 <div className="hero-stats animate-fade-in-up">

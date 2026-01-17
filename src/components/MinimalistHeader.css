@@ -381,3 +381,14 @@
         padding: 0 1.5rem;
     }
 }
+
+/* ========== SMALL DESKTOP OPTIMIZATION ========== */
+@media (min-width: 1025px) and (max-width: 1280px) {
+    .desktop-nav {
+        gap: 2rem;
+    }
+
+    .header-container {
+        padding: 0 1.5rem;
+    }
+}

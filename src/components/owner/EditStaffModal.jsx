@@ -48,8 +48,8 @@ const EditStaffModal = ({ isOpen, onClose, staffData, onSuccess }) => {
             if (onSuccess) onSuccess();
             onClose();
         } catch (error) {
-            console.error(error);
-            alert('Erreur: ' + error.message);
+            const errorMessage = error?.message || 'Erreur lors de la mise à jour du membre.';
+            alert(`Erreur: ${errorMessage}`);
         } finally {
             setLoading(false);
         }

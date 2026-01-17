@@ -11,6 +11,7 @@ import {
     Plus,
     Trash2
 } from 'lucide-react';
+import ErrorMessage from '../ErrorMessage';
 import './OverviewTab.css';
 
 const OverviewTab = () => {
@@ -23,6 +24,7 @@ const OverviewTab = () => {
         growthData: []
     });
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     const calculateTrend = (current, previous) => {
         if (previous === 0) return current > 0 ? '+100%' : '0%';
@@ -110,7 +112,8 @@ const OverviewTab = () => {
                 growthData: months
             });
         } catch (error) {
-            console.error('Error fetching dynamic overview data:', error);
+            const errorMessage = error?.message || 'Erreur lors du chargement des statistiques.';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -144,6 +147,15 @@ const OverviewTab = () => {
 
     return (
         <div className="overview-tab">
+            {error && (
+                <ErrorMessage 
+                    message={error} 
+                    onDismiss={() => setError(null)}
+                    retry={fetchOverviewData}
+                    retryLabel="Réessayer"
+                />
+            )}
+
             {/* Header Section */}
             <div className="overview-header">
                 <div className="welcome-text">

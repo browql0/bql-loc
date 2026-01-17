@@ -6,11 +6,11 @@ import About from '../components/About';
 import Contact from '../components/Contact';
 import MinimalistFooter from '../components/MinimalistFooter';
 
-const Home = ({ navigate }) => {
+const Home = () => {
     return (
         <div>
-            <MinimalistHeader navigate={navigate} />
-            <MinimalistHero navigate={navigate} />
+            <MinimalistHeader />
+            <MinimalistHero />
             <Services />
             <About />
             <Contact />

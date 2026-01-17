@@ -85,8 +85,8 @@ const AddStaffModal = ({ isOpen, onClose, agencyId, onSuccess }) => {
             }
 
         } catch (error) {
-            console.error(error);
-            alert('Erreur: ' + error.message);
+            const errorMessage = error?.message || 'Erreur lors de l\'ajout du membre.';
+            alert(`Erreur: ${errorMessage}`);
         } finally {
             setLoading(false);
         }

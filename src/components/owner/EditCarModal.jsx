@@ -91,8 +91,8 @@ const EditCarModal = ({ isOpen, onClose, carData, onSuccess }) => {
             onClose();
 
         } catch (error) {
-            console.error('Error updating car:', error);
-            alert('Erreur: ' + error.message);
+            const errorMessage = error?.message || 'Erreur lors de la mise à jour du véhicule.';
+            alert(`Erreur: ${errorMessage}`);
         }
     };
 

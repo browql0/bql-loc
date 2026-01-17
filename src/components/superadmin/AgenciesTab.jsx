@@ -8,19 +8,22 @@ import {
     Shield,
     CheckCircle2,
     XCircle,
-    User
+    User,
+    Pencil
 } from 'lucide-react';
 import './AgenciesTab.css';
-
 import AddAgencyModal from './AddAgencyModal';
 import EditAgencyModal from './EditAgencyModal';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import SuccessModal from './SuccessModal';
-import { Pencil } from 'lucide-react';
+import ErrorMessage from '../ErrorMessage';
+import EmptyState from '../EmptyState';
+import LoadingSpinner from '../LoadingSpinner';
 
 const AgenciesTab = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const [agencies, setAgencies] = useState([]);
@@ -52,22 +55,53 @@ const AgenciesTab = () => {
 
             if (error) throw error;
 
-            // Transform data for UI
-            const formatted = data.map(agency => ({
-                id: agency.id,
-                name: agency.name,
-                owner: agency.profiles?.[0]?.full_name || 'N/A',
-                email: agency.profiles?.[0]?.email || 'N/A',
-                phone: agency.profiles?.[0]?.phone || '',
-                status: 'active', // TODO: Add status column to agencies table if needed
-                revenue: '0 MAD', // Placeholder
-                cars: 0, // Placeholder
-                created_at: agency.created_at
+            // Transform data for UI with real calculations
+            const formatted = await Promise.all(data.map(async (agency) => {
+                let revenue = 0;
+                let carsCount = 0;
+
+                try {
+                    // Calculate real revenue from bookings
+                    const { data: bookings } = await supabase
+                        .from('bookings')
+                        .select('total_price')
+                        .eq('agency_id', agency.id)
+                        .in('status', ['confirmed', 'completed']);
+
+                    revenue = bookings?.reduce((acc, curr) => acc + (Number(curr.total_price) || 0), 0) || 0;
+                } catch (e) {
+                    // Silently handle booking fetch errors
+                }
+
+                try {
+                    // Count cars for this agency
+                    const { count } = await supabase
+                        .from('cars')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('agency_id', agency.id);
+                    carsCount = count || 0;
+                } catch (e) {
+                    // Silently handle cars count errors
+                }
+
+                return {
+                    id: agency.id,
+                    name: agency.name,
+                    owner: agency.profiles?.[0]?.full_name || 'N/A',
+                    email: agency.profiles?.[0]?.email || 'N/A',
+                    phone: agency.profiles?.[0]?.phone || '',
+                    status: 'active', // Default to active, can be enhanced with status column later
+                    revenue: `${revenue.toLocaleString('fr-FR')} MAD`,
+                    cars: carsCount,
+                    created_at: agency.created_at
+                };
             }));
 
             setAgencies(formatted);
         } catch (error) {
-            console.error('Error fetching agencies:', error);
+            const errorMessage = error?.message || 'Erreur lors du chargement des agences.';
+            setError(errorMessage);
+            setAgencies([]);
         } finally {
             setLoading(false);
         }
@@ -108,8 +142,14 @@ const AgenciesTab = () => {
             setIsSuccessModalOpen(true);
             fetchAgencies();
         } catch (error) {
-            console.error('Error deleting agency:', error);
-            alert('Erreur: ' + error.message);
+            const errorMessage = error?.message || 'Erreur lors de la suppression.';
+            if (!window.confirm(`Erreur: ${errorMessage}\n\nVoulez-vous réessayer?`)) {
+                setIsDeleteModalOpen(false);
+                setCurrentAgency(null);
+                return;
+            }
+            // Retry deletion
+            handleConfirmDelete();
         } finally {
             setActionLoading(false);
             setCurrentAgency(null);
@@ -190,8 +230,30 @@ const AgenciesTab = () => {
                 message={successMessage}
             />
 
-            <div className="table-container">
-                <table className="modern-table">
+            {error && (
+                <ErrorMessage 
+                    message={error} 
+                    onDismiss={() => setError(null)}
+                    retry={fetchAgencies}
+                    retryLabel="Réessayer"
+                />
+            )}
+
+            {loading ? (
+                <LoadingSpinner message="Chargement des agences..." />
+            ) : filteredAgencies.length === 0 ? (
+                <EmptyState
+                    icon={Building2}
+                    title={searchTerm ? 'Aucune agence trouvée' : 'Aucune agence enregistrée'}
+                    message={searchTerm 
+                        ? 'Aucune agence ne correspond à votre recherche.' 
+                        : 'Aucune agence n\'a encore été créée dans le système.'}
+                    actionLabel="Créer une agence"
+                    onAction={() => setIsModalOpen(true)}
+                />
+            ) : (
+                <div className="table-container">
+                    <table className="modern-table">
                     <thead>
                         <tr>
                             <th>Agence</th>
@@ -250,14 +312,9 @@ const AgenciesTab = () => {
                             </tr>
                         ))}
                     </tbody>
-                </table>
-
-                {filteredAgencies.length === 0 && (
-                    <div className="empty-state">
-                        <p>Aucune agence trouvée.</p>
-                    </div>
-                )}
-            </div>
+                    </table>
+                </div>
+            )}
         </div>
     );
 };

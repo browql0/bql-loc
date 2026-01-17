@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-
+import { useNavigate } from 'react-router-dom';
 import { Command, Instagram, Twitter, Facebook } from 'lucide-react';
 import './MinimalistHeader.css';
 
-const MinimalistHeader = ({ navigate }) => {
+const MinimalistHeader = () => {
+    const navigate = useNavigate();
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -41,16 +42,22 @@ const MinimalistHeader = ({ navigate }) => {
                     <span className="logo-text">BQL</span>
                 </div>
 
-                <nav className="desktop-nav">
+                <nav className="desktop-nav" role="navigation" aria-label="Navigation principale">
                     {navLinks.map((link) => (
-                        <a key={link.name} href={link.href}>
+                        <a key={link.name} href={link.href} aria-label={link.name}>
                             {link.name}
                         </a>
                     ))}
                 </nav>
 
                 <div className="header-actions">
-                    <button className="btn-primary desktop-only" onClick={() => navigate('register')}>Commencer</button>
+                    <button 
+                        className="btn-primary desktop-only" 
+                        onClick={() => navigate('/register')}
+                        aria-label="Créer un compte"
+                    >
+                        Commencer
+                    </button>
 
                     {/* Custom Burger Icon - Refined structure */}
                     <button
@@ -70,13 +77,14 @@ const MinimalistHeader = ({ navigate }) => {
             {/* Top-Down Mobile Menu */}
             <div className={`mobile-menu-overlay ${isMenuOpen ? 'open' : ''}`}>
                 <div className="mobile-menu-content">
-                    <nav className="mobile-nav">
+                    <nav className="mobile-nav" role="navigation" aria-label="Navigation mobile">
                         {navLinks.map((link, index) => (
                             <a
                                 key={link.name}
                                 href={link.href}
                                 onClick={() => setIsMenuOpen(false)}
                                 style={{ transitionDelay: isMenuOpen ? `${index * 0.1}s` : '0s' }}
+                                aria-label={link.name}
                             >
                                 {link.name}
                             </a>
@@ -84,7 +92,7 @@ const MinimalistHeader = ({ navigate }) => {
                     </nav>
 
                     <div className="mobile-menu-footer">
-                        <button className="btn-primary full-width" onClick={() => { navigate('register'); setIsMenuOpen(false); }}>Commencer</button>
+                        <button className="btn-primary full-width" onClick={() => { navigate('/register'); setIsMenuOpen(false); }}>Commencer</button>
                         <div className="mobile-socials">
                             <Instagram size={22} />
                             <Twitter size={22} />

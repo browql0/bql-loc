@@ -1,0 +1,223 @@
+.audit-logs-tab {
+    padding: 0;
+}
+
+.audit-logs-tab .tab-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    gap: 2rem;
+}
+
+.audit-logs-tab .header-info h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.5rem;
+}
+
+.audit-logs-tab .header-info p {
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.filters-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-select {
+    padding: 0.625rem 1rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    font-size: 0.875rem;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 160px;
+}
+
+.filter-select:hover {
+    border-color: #cbd5e1;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.audit-table thead th {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: #475569;
+    padding: 0.875rem 1rem;
+}
+
+.audit-table thead th svg {
+    vertical-align: middle;
+    margin-right: 0.25rem;
+}
+
+.audit-table tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+.user-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-avatar-small {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.action-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.action-badge.green {
+    background: rgba(34, 197, 94, 0.1);
+    color: #15803d;
+}
+
+.action-badge.blue {
+    background: rgba(59, 130, 246, 0.1);
+    color: #1e40af;
+}
+
+.action-badge.red {
+    background: rgba(239, 68, 68, 0.1);
+    color: #b91c1c;
+}
+
+.action-badge.gray {
+    background: rgba(100, 116, 139, 0.1);
+    color: #475569;
+}
+
+.role-badge {
+    display: inline-block;
+    padding: 0.25rem 0.625rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.role-badge.purple {
+    background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+    color: white;
+}
+
+.role-badge.blue {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+}
+
+.role-badge.orange {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    color: white;
+}
+
+.role-badge.gray {
+    background: #94a3b8;
+    color: white;
+}
+
+.table-footer {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+    text-align: center;
+}
+
+.text-muted {
+    color: #94a3b8;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+}
+
+.font-mono {
+    font-family: 'Courier New', monospace;
+}
+
+.btn-export {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+}
+
+.btn-export:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.btn-export:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .audit-logs-tab .tab-header-row {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .filters-row {
+        flex-direction: column;
+    }
+
+    .filter-select {
+        width: 100%;
+    }
+
+    .audit-table {
+        font-size: 0.8rem;
+    }
+
+    .audit-table thead th,
+    .audit-table tbody td {
+        padding: 0.5rem;
+    }
+}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useNotifications } from '../hooks/useNotifications';
 import {
     Users,
     Car,
@@ -14,12 +15,14 @@ import {
     ChevronRight,
     Command,
     Search,
-    HelpCircle
+    HelpCircle,
+    Calendar
 } from 'lucide-react';
 import StaffTab from '../components/owner/staff';
 import CarsTab from '../components/owner/cars';
 import ClientsTab from '../components/owner/ClientsTab';
 import PaymentTab from '../components/owner/Payment';
+import BookingsTab from '../components/owner/BookingsTab';
 import './OwnerDashboard.css';
 
 const OwnerDashboard = () => {
@@ -29,6 +32,15 @@ const OwnerDashboard = () => {
     const [showNotifications, setShowNotifications] = useState(false);
     const [agencyId, setAgencyId] = useState(null);
 
+    // ✅ Notifications réelles (temps réel)
+    const {
+        notifications,
+        unreadCount,
+        markAsRead,
+        markAllAsRead,
+        loading: notifLoading
+    } = useNotifications();
+
     useEffect(() => {
         const fetchAgency = async () => {
             const { data: { user } } = await supabase.auth.getUser();
@@ -36,7 +48,6 @@ const OwnerDashboard = () => {
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('agency_id')
-                    .eq('id', user.id)
                     .eq('id', user.id)
                     .maybeSingle();
 
@@ -46,15 +57,10 @@ const OwnerDashboard = () => {
         fetchAgency();
     }, []);
 
-    const notifications = [
-        { id: 1, title: 'Nouveau Staff', message: 'Amine Alaoui a rejoint l\'équipe.', time: 'Il y a 2 min', read: false },
-        { id: 2, title: 'Maintenance', message: 'La Mercedes G-Class est en révision.', time: 'Il y a 1h', read: true },
-        { id: 3, title: 'Paiement', message: 'Nouveau paiement de 2500 DH reçu.', time: 'Il y a 3h', read: true },
-    ];
-
     const menuItems = [
         { id: 'staff', label: 'Gestion Staff', icon: Users },
         { id: 'cars', label: 'Flotte Automobile', icon: Car },
+        { id: 'bookings', label: 'Réservations', icon: Calendar },
         { id: 'clients', label: 'Clients', icon: Users },
         { id: 'payments', label: 'Historique Paiements', icon: CreditCard },
     ];
@@ -62,6 +68,19 @@ const OwnerDashboard = () => {
     const getPageTitle = () => {
         const item = menuItems.find(item => item.id === activeTab);
         return item ? item.label : 'Dashboard';
+    };
+
+    // Helper pour afficher le temps relatif
+    const getTimeAgo = (dateString) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+
+        if (seconds < 60) return 'À l\'instant';
+        if (seconds < 3600) return `Il y a ${Math.floor(seconds / 60)} min`;
+        if (seconds < 86400) return `Il y a ${Math.floor(seconds / 3600)}h`;
+        if (seconds < 604800) return `Il y a ${Math.floor(seconds / 86400)}j`;
+        return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
     };
 
     return (
@@ -116,18 +135,18 @@ const OwnerDashboard = () => {
             <main className="main-content">
                 <header className="content-header">
                     <div className="header-left">
-                        {  /*  <button className="menu-toggle" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+                        <button className="menu-toggle" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
                             <Menu size={24} />
-                        </button>*/ }
+                        </button>
                         <div className="header-title-container">
                             <h1>{getPageTitle()}</h1>
                             <div className="vertical-divider"></div>
                         </div>
                         <div className="header-search-global">
                             <Search size={18} aria-hidden="true" />
-                            <input 
-                                type="text" 
-                                placeholder="Recherche globale..." 
+                            <input
+                                type="text"
+                                placeholder="Recherche globale..."
                                 aria-label="Recherche globale"
                             />
                         </div>
@@ -144,33 +163,68 @@ const OwnerDashboard = () => {
                                 onClick={() => setShowNotifications(!showNotifications)}
                             >
                                 <Bell size={22} />
-                                <span className="notif-badge-new">3</span>
+                                {unreadCount > 0 && (
+                                    <span className="notif-badge-new">{unreadCount}</span>
+                                )}
                             </button>
 
                             {showNotifications && (
                                 <div className="notification-dropdown animate-pop-in">
                                     <div className="notif-header">
                                         <h3>Notifications</h3>
-                                        <button className="mark-read">Tout marquer comme lu</button>
+                                        <button
+                                            className="mark-read"
+                                            onClick={async () => {
+                                                await markAllAsRead();
+                                            }}
+                                            disabled={unreadCount === 0}
+                                        >
+                                            Tout marquer comme lu
+                                        </button>
                                     </div>
                                     <div className="notif-list">
-                                        {notifications.map(n => (
-                                            <div key={n.id} className={`notif-item ${!n.read ? 'unread' : ''}`}>
-                                                <div className="notif-icon">
-                                                    <Bell size={14} />
-                                                </div>
-                                                <div className="notif-content">
-                                                    <p className="notif-title">{n.title}</p>
-                                                    <p className="notif-msg">{n.message}</p>
-                                                    <span className="notif-time">{n.time}</span>
-                                                </div>
-                                                {!n.read && <div className="unread-dot"></div>}
+                                        {notifLoading ? (
+                                            <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
+                                                Chargement...
                                             </div>
-                                        ))}
+                                        ) : notifications.length === 0 ? (
+                                            <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
+                                                <Bell size={24} style={{ opacity: 0.5, marginBottom: '0.5rem' }} />
+                                                <p>Aucune notification</p>
+                                            </div>
+                                        ) : (
+                                            notifications.slice(0, 5).map(n => {
+                                                const timeAgo = getTimeAgo(n.created_at);
+                                                return (
+                                                    <div
+                                                        key={n.id}
+                                                        className={`notif-item ${!n.read ? 'unread' : ''}`}
+                                                        onClick={async () => {
+                                                            if (!n.read) {
+                                                                await markAsRead(n.id);
+                                                            }
+                                                        }}
+                                                        style={{ cursor: 'pointer' }}
+                                                    >
+                                                        <div className="notif-icon">
+                                                            <Bell size={14} />
+                                                        </div>
+                                                        <div className="notif-content">
+                                                            <p className="notif-title">{n.title}</p>
+                                                            <p className="notif-msg">{n.message}</p>
+                                                            <span className="notif-time">{timeAgo}</span>
+                                                        </div>
+                                                        {!n.read && <div className="unread-dot"></div>}
+                                                    </div>
+                                                );
+                                            })
+                                        )}
                                     </div>
-                                    <div className="notif-footer">
-                                        <button>Voir toutes les notifications</button>
-                                    </div>
+                                    {notifications.length > 0 && (
+                                        <div className="notif-footer">
+                                            <button>Voir toutes ({notifications.length})</button>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -189,8 +243,9 @@ const OwnerDashboard = () => {
 
                 <div className="tab-container">
                     <div className="glass-panel">
-                        {activeTab === 'staff' && <StaffTab agencyId={agencyId} />}
+                        {activeTab === 'staff' && <StaffTab />}
                         {activeTab === 'cars' && <CarsTab />}
+                        {activeTab === 'bookings' && <BookingsTab agencyId={agencyId} />}
                         {activeTab === 'clients' && <ClientsTab />}
                         {activeTab === 'payments' && <PaymentTab />}
                     </div>

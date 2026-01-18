@@ -9,7 +9,9 @@ import {
     CheckCircle,
     Sparkles
 } from 'lucide-react';
-import './AddAgencyModal.css'; // Reusing the same styles
+import LoadingSpinner from '../LoadingSpinner';
+import ErrorModal from './ErrorModal';
+import './AddAgencyModal.css';
 
 const EditAgencyModal = ({ isOpen, onClose, onSuccess, agencyData }) => {
     const [formData, setFormData] = useState({
@@ -19,14 +21,16 @@ const EditAgencyModal = ({ isOpen, onClose, onSuccess, agencyData }) => {
         ownerPhone: ''
     });
     const [loading, setLoading] = useState(false);
+    const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         if (agencyData) {
             setFormData({
                 agencyName: agencyData.name || '',
-                ownerName: agencyData.owner || '',
-                ownerEmail: agencyData.email || '',
-                ownerPhone: agencyData.phone || ''
+                ownerName: agencyData.owner_name || agencyData.full_name || agencyData.owner || '',
+                ownerEmail: agencyData.owner_email || agencyData.email || '',
+                ownerPhone: agencyData.owner_phone || agencyData.phone || ''
             });
         }
     }, [agencyData, isOpen]);
@@ -60,8 +64,8 @@ const EditAgencyModal = ({ isOpen, onClose, onSuccess, agencyData }) => {
             if (onSuccess) onSuccess();
             onClose();
         } catch (error) {
-            const errorMessage = error?.message || 'Erreur lors de la mise à jour de l\'agence.';
-            alert(`Erreur: ${errorMessage}`);
+            setErrorMessage(error?.message || 'Erreur lors de la mise à jour de l\'agence.');
+            setIsErrorModalOpen(true);
         } finally {
             setLoading(false);
         }
@@ -167,6 +171,13 @@ const EditAgencyModal = ({ isOpen, onClose, onSuccess, agencyData }) => {
                     </div>
                 </form>
             </div>
+
+            <ErrorModal
+                isOpen={isErrorModalOpen}
+                onClose={() => setIsErrorModalOpen(false)}
+                message={errorMessage}
+                title="Erreur de Mise à Jour"
+            />
         </div>
     );
 };

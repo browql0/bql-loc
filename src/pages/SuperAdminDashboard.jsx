@@ -20,6 +20,7 @@ import AgenciesTab from '../components/superadmin/AgenciesTab';
 import OverviewTab from '../components/superadmin/OverviewTab';
 import UsersTab from '../components/superadmin/UsersTab';
 import SettingsTab from '../components/superadmin/Settings';
+import AuditLogsTab from '../components/superadmin/AuditLogsTab';
 
 const SuperAdminDashboard = () => {
     const navigate = useNavigate();
@@ -31,6 +32,7 @@ const SuperAdminDashboard = () => {
         { id: 'overview', label: 'Vue d\'ensemble', icon: LayoutDashboard },
         { id: 'agencies', label: 'Agences', icon: Building2 },
         { id: 'users', label: 'Utilisateurs', icon: Users },
+        { id: 'audit', label: 'Logs d\'Audit', icon: Shield },
         { id: 'settings', label: 'Paramètres', icon: Settings },
     ];
 
@@ -95,26 +97,17 @@ const SuperAdminDashboard = () => {
                         <button className="menu-toggle" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
                             <Menu size={24} />
                         </button>
-                        <div className="header-title-container">
-                            <h1>{getPageTitle()}</h1>
-                            <div className="vertical-divider"></div>
-                        </div>
-                        <div className="header-search-global">
-                            <Search size={18} aria-hidden="true" />
-                            <input
-                                type="text"
-                                placeholder="Recherche globale..."
-                                aria-label="Recherche globale"
-                            />
+                        <div className="header-identity">
+                            <span className="mobile-meta">SYSTEM • SECURE • v2.0.4</span>
+                            <h1 className="header-title">{getPageTitle()}</h1>
                         </div>
                     </div>
 
-                    <div className="header-right">
+                    <div className="header-right-desktop">
                         <div className="header-status-pill">
                             <span className="dot pulse"></span>
                             System Secure
                         </div>
-
                         <div className="user-profile-premium">
                             <div className="user-avatar-wrap">
                                 <div className="user-avatar">SA</div>
@@ -126,7 +119,18 @@ const SuperAdminDashboard = () => {
                             </div>
                         </div>
                     </div>
+
+                    <div className="header-right-mobile">
+                        <div className="mobile-action-system">
+                            <div className="mobile-live-shield">
+                                <span className="shield-dot pulse"></span>
+                                <span>LIVE</span>
+                            </div>
+                        </div>
+                        <div className="mobile-user-avatar">SA</div>
+                    </div>
                 </header>
+
 
                 <div className="tab-container">
                     <div className="glass-panel">
@@ -135,6 +139,7 @@ const SuperAdminDashboard = () => {
                         {activeTab === 'overview' && <OverviewTab />}
                         {activeTab === 'agencies' && <AgenciesTab />}
                         {activeTab === 'users' && <UsersTab />}
+                        {activeTab === 'audit' && <AuditLogsTab />}
                         {activeTab === 'settings' && <SettingsTab />}
                     </div>
                 </div>

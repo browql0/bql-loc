@@ -13,6 +13,7 @@ import {
     Sparkles,
     Shield
 } from 'lucide-react';
+import ErrorModal from './ErrorModal';
 import './AddAgencyModal.css';
 
 const AddAgencyModal = ({ isOpen, onClose, onSuccess }) => {
@@ -25,6 +26,8 @@ const AddAgencyModal = ({ isOpen, onClose, onSuccess }) => {
     });
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     if (!isOpen) return null;
 
@@ -62,8 +65,8 @@ const AddAgencyModal = ({ isOpen, onClose, onSuccess }) => {
             });
             onClose();
         } catch (error) {
-            const errorMessage = error?.message || 'Erreur lors de l\'ajout de l\'agence.';
-            alert(`Erreur: ${errorMessage}`);
+            setErrorMessage(error?.message || 'Erreur lors de l\'ajout de l\'agence.');
+            setIsErrorModalOpen(true);
         } finally {
             setLoading(false);
         }
@@ -198,6 +201,13 @@ const AddAgencyModal = ({ isOpen, onClose, onSuccess }) => {
                     </div>
                 </form>
             </div>
+
+            <ErrorModal
+                isOpen={isErrorModalOpen}
+                onClose={() => setIsErrorModalOpen(false)}
+                message={errorMessage}
+                title="Erreur de Création"
+            />
         </div>
     );
 };

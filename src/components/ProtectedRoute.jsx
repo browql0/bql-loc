@@ -60,11 +60,47 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     }
 
     if (!user) {
-        return null;
+        return null; // Already redirecting in useEffect
     }
 
     if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
-        return null;
+        // CRITICAL: Don't return null - this would mount the protected component
+        // and execute its code (including useEffect) before redirection
+        return (
+            <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                minHeight: '100vh',
+                background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                color: 'white',
+                textAlign: 'center',
+                padding: '2rem'
+            }}>
+                <div>
+                    <div style={{
+                        width: '64px',
+                        height: '64px',
+                        margin: '0 auto 1.5rem',
+                        borderRadius: '50%',
+                        background: 'rgba(239, 68, 68, 0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '2rem'
+                    }}>
+                        🚫
+                    </div>
+                    <h2 style={{ marginBottom: '0.5rem', fontSize: '1.5rem' }}>Accès refusé</h2>
+                    <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '1rem' }}>
+                        Vous n'avez pas les permissions nécessaires pour accéder à cette page.
+                    </p>
+                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.875rem' }}>
+                        Redirection en cours...
+                    </p>
+                </div>
+            </div>
+        );
     }
 
     return children;

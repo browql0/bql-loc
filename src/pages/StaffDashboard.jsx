@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useNotifications } from '../hooks/useNotifications';
 import {
     Users,
     Car,
@@ -29,6 +30,15 @@ const StaffDashboard = () => {
     const [agencyId, setAgencyId] = useState(null);
     const [userProfile, setUserProfile] = useState(null);
 
+    // ✅ Notifications réelles (temps réel)
+    const {
+        notifications,
+        unreadCount,
+        markAsRead,
+        markAllAsRead,
+        loading: notifLoading
+    } = useNotifications();
+
     useEffect(() => {
         const fetchUserData = async () => {
             const { data: { user } } = await supabase.auth.getUser();
@@ -48,11 +58,6 @@ const StaffDashboard = () => {
         fetchUserData();
     }, []);
 
-    const notifications = [
-        { id: 1, title: 'Nouvelle Réservation', message: 'Réservation confirmée pour Mercedes G-Class.', time: 'Il y a 5 min', read: false },
-        { id: 2, title: 'Client', message: 'Nouveau client enregistré.', time: 'Il y a 1h', read: true },
-    ];
-
     const menuItems = [
         { id: 'dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
         { id: 'clients', label: 'Clients', icon: Users },
@@ -67,6 +72,19 @@ const StaffDashboard = () => {
     const handleLogout = async () => {
         await supabase.auth.signOut();
         navigate('/login');
+    };
+
+    // Helper pour afficher le temps relatif
+    const getTimeAgo = (dateString) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+
+        if (seconds < 60) return 'À l\'instant';
+        if (seconds < 3600) return `Il y a ${Math.floor(seconds / 60)} min`;
+        if (seconds < 86400) return `Il y a ${Math.floor(seconds / 3600)}h`;
+        if (seconds < 604800) return `Il y a ${Math.floor(seconds / 86400)}j`;
+        return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
     };
 
     return (
@@ -130,9 +148,9 @@ const StaffDashboard = () => {
                         </div>
                         <div className="header-search-global">
                             <Search size={18} aria-hidden="true" />
-                            <input 
-                                type="text" 
-                                placeholder="Recherche globale..." 
+                            <input
+                                type="text"
+                                placeholder="Recherche globale..."
                                 aria-label="Recherche globale"
                             />
                         </div>
@@ -149,33 +167,68 @@ const StaffDashboard = () => {
                                 onClick={() => setShowNotifications(!showNotifications)}
                             >
                                 <Bell size={22} />
-                                <span className="notif-badge-new">{notifications.filter(n => !n.read).length}</span>
+                                {unreadCount > 0 && (
+                                    <span className="notif-badge-new">{unreadCount}</span>
+                                )}
                             </button>
 
                             {showNotifications && (
                                 <div className="notification-dropdown animate-pop-in">
                                     <div className="notif-header">
                                         <h3>Notifications</h3>
-                                        <button className="mark-read">Tout marquer comme lu</button>
+                                        <button
+                                            className="mark-read"
+                                            onClick={async () => {
+                                                await markAllAsRead();
+                                            }}
+                                            disabled={unreadCount === 0}
+                                        >
+                                            Tout marquer comme lu
+                                        </button>
                                     </div>
                                     <div className="notif-list">
-                                        {notifications.map(n => (
-                                            <div key={n.id} className={`notif-item ${!n.read ? 'unread' : ''}`}>
-                                                <div className="notif-icon">
-                                                    <Bell size={14} />
-                                                </div>
-                                                <div className="notif-content">
-                                                    <p className="notif-title">{n.title}</p>
-                                                    <p className="notif-msg">{n.message}</p>
-                                                    <span className="notif-time">{n.time}</span>
-                                                </div>
-                                                {!n.read && <div className="unread-dot"></div>}
+                                        {notifLoading ? (
+                                            <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
+                                                Chargement...
                                             </div>
-                                        ))}
+                                        ) : notifications.length === 0 ? (
+                                            <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
+                                                <Bell size={24} style={{ opacity: 0.5, marginBottom: '0.5rem' }} />
+                                                <p>Aucune notification</p>
+                                            </div>
+                                        ) : (
+                                            notifications.slice(0, 5).map(n => {
+                                                const timeAgo = getTimeAgo(n.created_at);
+                                                return (
+                                                    <div
+                                                        key={n.id}
+                                                        className={`notif-item ${!n.read ? 'unread' : ''}`}
+                                                        onClick={async () => {
+                                                            if (!n.read) {
+                                                                await markAsRead(n.id);
+                                                            }
+                                                        }}
+                                                        style={{ cursor: 'pointer' }}
+                                                    >
+                                                        <div className="notif-icon">
+                                                            <Bell size={14} />
+                                                        </div>
+                                                        <div className="notif-content">
+                                                            <p className="notif-title">{n.title}</p>
+                                                            <p className="notif-msg">{n.message}</p>
+                                                            <span className="notif-time">{timeAgo}</span>
+                                                        </div>
+                                                        {!n.read && <div className="unread-dot"></div>}
+                                                    </div>
+                                                );
+                                            })
+                                        )}
                                     </div>
-                                    <div className="notif-footer">
-                                        <button>Voir toutes les notifications</button>
-                                    </div>
+                                    {notifications.length > 0 && (
+                                        <div className="notif-footer">
+                                            <button>Voir toutes ({notifications.length})</button>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>

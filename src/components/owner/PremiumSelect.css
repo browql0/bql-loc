@@ -163,20 +163,15 @@
     }
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar - Hidden but functional */
+.dropdown-scroll-area {
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE/Edge */
+}
+
 .dropdown-scroll-area::-webkit-scrollbar {
-    width: 6px;
-}
-
-.dropdown-scroll-area::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.dropdown-scroll-area::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-}
-
-.dropdown-scroll-area::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.2);
+    display: none;
+    /* Chrome, Safari, Opera */
 }

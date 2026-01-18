@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import {
     X,
     Building2,
@@ -11,12 +12,13 @@ import {
     Shield,
     CheckCircle2,
     XCircle,
-    History
+    History,
+    Pencil
 } from 'lucide-react';
 import './AgencyDetailDrawer.css';
 import { supabase } from '../../lib/supabase';
 
-const AgencyDetailDrawer = ({ isOpen, onClose, agencyId }) => {
+const AgencyDetailDrawer = ({ isOpen, onClose, agencyId, onEdit }) => {
     const [agency, setAgency] = useState(null);
     const [loading, setLoading] = useState(true);
     const [users, setUsers] = useState([]);
@@ -75,7 +77,9 @@ const AgencyDetailDrawer = ({ isOpen, onClose, agencyId }) => {
 
     if (!isOpen) return null;
 
-    return (
+    // Use Portal to render modal at document.body level
+    // This ensures the blur covers EVERYTHING including sidebar and header
+    return ReactDOM.createPortal(
         <div className={`agency-detail-overlay ${isOpen ? 'active' : ''}`} onClick={onClose}>
             <div className="agency-detail-drawer glass-panel" onClick={e => e.stopPropagation()}>
                 <header className="drawer-header">
@@ -95,128 +99,162 @@ const AgencyDetailDrawer = ({ isOpen, onClose, agencyId }) => {
 
                 <div className="drawer-content">
                     {loading ? (
-                        <div className="drawer-shimmer-loading">
-                            <div className="shimmer-line large" />
-                            <div className="shimmer-line medium" />
-                            <div className="shimmer-block" />
+                        <div className="drawer-loading">
+                            <Activity size={24} />
+                            <span>CHARGEMENT DES DONNÉES...</span>
                         </div>
                     ) : (
                         <>
-                            {/* 1. Drawer Navigation Cluster */}
+                            {/* Navigation Tabs - Now separate from header */}
                             <nav className="drawer-nav-system">
-                                <button className={`nav-item ${activeTab === 'general' ? 'active' : ''}`} onClick={() => setActiveTab('general')}>GÉNÉRAL</button>
-                                <button className={`nav-item ${activeTab === 'team' ? 'active' : ''}`} onClick={() => setActiveTab('team')}>ÉQUIPE</button>
-                                <button className={`nav-item ${activeTab === 'fleet' ? 'active' : ''}`} onClick={() => setActiveTab('fleet')}>FLOTTE</button>
-                                <button className={`nav-item ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>AUDIT</button>
+                                <button className={`drawer-nav-item ${activeTab === 'general' ? 'active' : ''}`} onClick={() => setActiveTab('general')}>GÉNÉRAL</button>
+                                <button className={`drawer-nav-item ${activeTab === 'team' ? 'active' : ''}`} onClick={() => setActiveTab('team')}>ÉQUIPE</button>
+                                <button className={`drawer-nav-item ${activeTab === 'fleet' ? 'active' : ''}`} onClick={() => setActiveTab('fleet')}>FLOTTE</button>
+                                <button className={`drawer-nav-item ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>AUDIT</button>
                             </nav>
 
-                            <div className="tab-render-horizon">
-                                {activeTab === 'general' && (
-                                    <div className="general-view-aqueous">
-                                        <div className="metric-grid-drawer">
-                                            <div className="aqueous-metric-card">
-                                                <label>STATUT SYSTÈME</label>
-                                                <div className="m-value">{agency?.status?.toUpperCase()}</div>
-                                                <div className="m-indicator pulse"></div>
-                                            </div>
-                                            <div className="aqueous-metric-card">
-                                                <label>TOTAL REVENU</label>
-                                                <div className="m-value">{Number(agency?.revenue_est || 0).toLocaleString()} <span className="m-unit">MAD</span></div>
+                            {activeTab === 'general' && (
+                                <div className="animate-scale-up">
+                                    <div className="metric-grid-drawer">
+                                        <div className="aqueous-metric-card">
+                                            <label>STATUT SYSTÈME</label>
+                                            <div className="m-value">{agency?.status?.toUpperCase()}</div>
+                                            <div className={`m-indicator ${agency?.status === 'active' ? 'pulse' : ''}`} style={{ background: agency?.status === 'active' ? '#10b981' : '#ef4444' }}></div>
+                                        </div>
+                                        <div className="aqueous-metric-card">
+                                            <label>TOTAL REVENU</label>
+                                            <div className="m-value">{Number(agency?.revenue_est || 0).toLocaleString()} <span className="m-unit">MAD</span></div>
+                                        </div>
+                                    </div>
+
+                                    <div className="info-instrument-panel">
+                                        <div className="instrument-field">
+                                            <User size={16} />
+                                            <div className="field-content">
+                                                <span className="f-label">RESPONSABLE</span>
+                                                <span className="f-value">{users.find(u => u.role === 'owner')?.full_name || 'N/A'}</span>
                                             </div>
                                         </div>
-
-                                        <div className="info-instrument-panel">
-                                            <div className="instrument-field">
-                                                <User size={14} />
-                                                <div className="field-content">
-                                                    <span className="f-label">RESPONSABLE</span>
-                                                    <span className="f-value">{users.find(u => u.role === 'owner')?.full_name || 'N/A'}</span>
-                                                </div>
+                                        <div className="instrument-field">
+                                            <Mail size={16} />
+                                            <div className="field-content">
+                                                <span className="f-label">EMAIL CONTACT</span>
+                                                <span className="f-value">{users.find(u => u.role === 'owner')?.email || 'N/A'}</span>
                                             </div>
-                                            <div className="instrument-field">
-                                                <Mail size={14} />
-                                                <div className="field-content">
-                                                    <span className="f-label">EMAIL CONTACT</span>
-                                                    <span className="f-value">{users.find(u => u.role === 'owner')?.email || 'N/A'}</span>
-                                                </div>
+                                        </div>
+                                        <div className="instrument-field">
+                                            <Phone size={16} />
+                                            <div className="field-content">
+                                                <span className="f-label">TÉLÉPHONE</span>
+                                                <span className="f-value">{users.find(u => u.role === 'owner')?.phone || 'N/A'}</span>
                                             </div>
-                                            <div className="instrument-field">
-                                                <Calendar size={14} />
-                                                <div className="field-content">
-                                                    <span className="f-label">DATE DÉPLOIEMENT</span>
-                                                    <span className="f-value">{new Date(agency?.created_at).toLocaleDateString()}</span>
-                                                </div>
+                                        </div>
+                                        <div className="instrument-field">
+                                            <Calendar size={16} />
+                                            <div className="field-content">
+                                                <span className="f-label">DATE DÉPLOIEMENT</span>
+                                                <span className="f-value">{new Date(agency?.created_at).toLocaleDateString()}</span>
                                             </div>
                                         </div>
                                     </div>
-                                )}
+                                </div>
+                            )}
 
-                                {activeTab === 'team' && (
-                                    <div className="team-view-aqueous">
-                                        <div className="user-surgical-list">
-                                            {users.map(user => (
-                                                <div key={user.id} className="user-module">
-                                                    <div className="u-avatar">
-                                                        {user.role === 'owner' ? <Shield size={16} /> : <User size={16} />}
-                                                    </div>
-                                                    <div className="u-info">
-                                                        <span className="u-name">{user.full_name}</span>
-                                                        <span className="u-email">{user.email}</span>
-                                                    </div>
-                                                    <div className="u-badge">{user.role.toUpperCase()}</div>
-                                                </div>
-                                            ))}
+                            {activeTab === 'team' && (
+                                <div className="user-surgical-list animate-scale-up">
+                                    {users.length > 0 ? users.map(user => (
+                                        <div key={user.id} className="user-module">
+                                            <div className="u-avatar">
+                                                {user.role === 'owner' ? <Shield size={20} /> : <User size={20} />}
+                                            </div>
+                                            <div className="u-info">
+                                                <span className="u-name">{user.full_name}</span>
+                                                <span className="u-email">{user.email}</span>
+                                            </div>
+                                            <div className={`u-badge ${user.role}`}>{user.role.toUpperCase()}</div>
                                         </div>
-                                    </div>
-                                )}
+                                    )) : (
+                                        <div className="drawer-empty">
+                                            <User />
+                                            <p>Aucun membre d'équipe trouvé.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
-                                {activeTab === 'fleet' && (
-                                    <div className="fleet-view-aqueous">
+                            {activeTab === 'fleet' && (
+                                <div className="animate-scale-up">
+                                    {fleet.length > 0 ? (
                                         <div className="fleet-grid-mini">
-                                            {fleet.length > 0 ? fleet.map(car => (
+                                            {fleet.map(car => (
                                                 <div key={car.id} className="car-module-mini">
-                                                    <Car size={16} />
+                                                    <Car size={20} />
                                                     <div className="c-info">
                                                         <span className="c-model">{car.brand} {car.model}</span>
                                                         <span className="c-plate">{car.plate_number}</span>
                                                     </div>
                                                 </div>
-                                            )) : (
-                                                <div className="empty-tactical">AUCUN VÉHICULE DÉPLOYÉ</div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {activeTab === 'audit' && (
-                                    <div className="audit-view-aqueous">
-                                        <div className="audit-instrument-timeline">
-                                            {auditLogs.map(log => (
-                                                <div key={log.id} className="audit-entry">
-                                                    <div className="entry-point" />
-                                                    <div className="entry-data">
-                                                        <div className="entry-header">
-                                                            <span className="action-tag">{log.action.replace('_', ' ').toUpperCase()}</span>
-                                                            <span className="time-tag">{new Date(log.created_at).toLocaleString()}</span>
-                                                        </div>
-                                                        <p className="admin-tag">Initialisé par {log.profiles?.full_name}</p>
-                                                    </div>
-                                                </div>
                                             ))}
                                         </div>
-                                    </div>
-                                )}
-                            </div>
+                                    ) : (
+                                        <div className="drawer-empty">
+                                            <Car />
+                                            <p>Aucun véhicule déployé dans cette agence.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {activeTab === 'audit' && (
+                                <div className="audit-instrument-timeline animate-scale-up">
+                                    {auditLogs.length > 0 ? auditLogs.map(log => (
+                                        <div key={log.id} className="audit-entry">
+                                            <div className="entry-point" />
+                                            <div className="entry-data">
+                                                <div className="entry-header">
+                                                    <span className="action-tag">{log.action.replace(/_/g, ' ').toUpperCase()}</span>
+                                                    <span className="time-tag">{new Date(log.created_at).toLocaleString()}</span>
+                                                </div>
+                                                <p className="admin-tag">Initialisé par {log.profiles?.full_name || 'Système'}</p>
+                                            </div>
+                                        </div>
+                                    )) : (
+                                        <div className="drawer-empty">
+                                            <History />
+                                            <p>Aucun historique d'activité enregistré.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
 
                 <footer className="drawer-footer">
                     <button className="btn-secondary-outline" onClick={onClose}>Fermer</button>
-                    <button className="btn-primary-black">Modifier l'Agence</button>
+                    <button
+                        className="btn-primary-black"
+                        onClick={() => {
+                            if (onEdit && agency) {
+                                onEdit({
+                                    id: agencyId,
+                                    name: agency.name,
+                                    owner_name: users.find(u => u.role === 'owner')?.full_name,
+                                    owner_email: users.find(u => u.role === 'owner')?.email,
+                                    owner_phone: users.find(u => u.role === 'owner')?.phone
+                                });
+                                onClose();
+                            }
+                        }}
+                        disabled={loading || !agency}
+                    >
+                        <Pencil size={16} />
+                        <span>Modifier l'Agence</span>
+                    </button>
                 </footer>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

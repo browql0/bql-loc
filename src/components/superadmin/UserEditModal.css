@@ -1,0 +1,351 @@
+/* 
+   User Edit Modal - Clean Professional Design
+   Surgical Instrument System
+*/
+
+.user-edit-overlay {
+    --modal-primary: #2563EB;
+    --modal-primary-light: #EFF6FF;
+    --modal-success: #10B981;
+    --modal-danger: #EF4444;
+    --modal-danger-light: #FEE2E2;
+    --modal-neutral-50: #F9FAFB;
+    --modal-neutral-100: #F3F4F6;
+    --modal-neutral-200: #E5E7EB;
+    --modal-neutral-300: #D1D5DB;
+    --modal-neutral-400: #9CA3AF;
+    --modal-neutral-500: #6B7280;
+    --modal-neutral-600: #4B5563;
+    --modal-neutral-900: #111827;
+
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.user-edit-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.user-edit-modal {
+    background: #FFFFFF;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 28px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: visible;
+    /* Prevent clipping PremiumSelect dropdown */
+    transform: scale(0.96) translateY(12px);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.user-edit-overlay.open .user-edit-modal {
+    transform: scale(1) translateY(0);
+}
+
+/* Header */
+.edit-header {
+    padding: 24px 32px;
+    border-bottom: 2px solid #F1F5F9;
+    /* Sharper border */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #FFFFFF;
+    position: relative;
+    border-top-left-radius: 28px;
+    /* Maintain modal radius */
+    border-top-right-radius: 28px;
+}
+
+.edit-header::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 32px;
+    width: 60px;
+    height: 2px;
+    background: #000;
+    /* Surgical accent line */
+}
+
+.edit-header h3 {
+    margin: 0;
+    font-size: 19px;
+    color: #000000;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+}
+
+.edit-close-btn {
+    background: #F1F5F9;
+    border: 1.5px solid #E2E8F0;
+    color: #000000;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.edit-close-btn:hover {
+    background: #000000;
+    color: #FFFFFF;
+    border-color: #000000;
+    transform: rotate(90deg) scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Form Area */
+.edit-form {
+    padding: 32px;
+    padding-bottom: 40px;
+    /* Extra space for dropdowns */
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.edit-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Reusing Instrument Field Logic from Detail Drawer but for Forms */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 11px;
+    font-weight: 800;
+    color: #1a1a1a;
+    /* Hardcoded dark color */
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-group input,
+.form-group select {
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 2px solid #CBD5E1 !important;
+    /* Thicker and darker border */
+    font-size: 15px;
+    color: #000000 !important;
+    background: #F8FAFC !important;
+    /* Slightly off-white background */
+    transition: all 0.2s ease;
+    outline: none;
+    font-weight: 600;
+    width: 100%;
+    box-sizing: border-box;
+    display: block !important;
+    /* Ensure it's not collapsed */
+}
+
+.form-group input::placeholder {
+    color: var(--modal-neutral-400);
+    font-weight: 500;
+    opacity: 0.8;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    background: #FFFFFF;
+    border-color: var(--modal-primary);
+    box-shadow: 0 0 0 4px var(--modal-primary-light);
+}
+
+/* Premium Select Refinement for this Modal */
+.form-group-premium {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group-premium label {
+    font-size: 11px;
+    font-weight: 800;
+    color: #1a1a1a;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-edit-modal .premium-select-trigger {
+    height: 48px !important;
+    /* Match standard inputs */
+    padding: 0 16px !important;
+    border-radius: 12px !important;
+    border: 2px solid #CBD5E1 !important;
+    background: #F8FAFC !important;
+}
+
+.user-edit-modal .premium-select-trigger.active {
+    border-color: var(--modal-primary) !important;
+    background: #FFFFFF !important;
+    box-shadow: 0 0 0 4px var(--modal-primary-light) !important;
+    transform: none !important;
+}
+
+.user-edit-modal .trigger-icon {
+    display: none !important;
+    /* Hide redundant icon if needed, or keep it */
+}
+
+.user-edit-modal .selected-text {
+    font-size: 15px !important;
+    color: #000000 !important;
+    font-weight: 600 !important;
+}
+
+.user-edit-modal .premium-select-dropdown {
+    border-radius: 16px !important;
+    border: 2px solid #CBD5E1 !important;
+    top: calc(100% + 8px) !important;
+}
+
+.warning-text {
+    font-size: 12px;
+    color: #D97706;
+    margin-top: 6px;
+    display: inline-block;
+    padding: 8px 12px;
+    background: #FFFBEB;
+    border-radius: 10px;
+    border: 1px solid #FEF3C7;
+    font-weight: 500;
+}
+
+/* Error Banner */
+.error-banner {
+    background: var(--modal-danger-light);
+    border: 1px solid #FECACA;
+    color: #DC2626;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Footer */
+.edit-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 8px;
+    padding: 24px 32px;
+    /* Added padding for consistent footer spacing */
+    background: #FFFFFF;
+    border-bottom-left-radius: 28px;
+    border-bottom-right-radius: 28px;
+    border-top: 1px solid #F1F5F9;
+}
+
+.btn-cancel {
+    height: 48px;
+    border-radius: 12px;
+    border: 1px solid var(--modal-neutral-200);
+    background: white;
+    color: var(--modal-neutral-600);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+    background: var(--modal-neutral-50);
+    color: var(--modal-neutral-900);
+}
+
+.btn-save {
+    height: 48px;
+    border-radius: 12px;
+    background: #000;
+    color: white;
+    border: none;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
+}
+
+.btn-save:hover:not(:disabled) {
+    background: #222;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.btn-save:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.loader-mini {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .user-edit-modal {
+        max-height: 95vh;
+        max-width: 100%;
+        border-radius: 24px 24px 0 0;
+        position: fixed;
+        bottom: 0;
+    }
+
+    .edit-form {
+        padding: 24px;
+    }
+
+    .edit-footer {
+        grid-template-columns: 1fr;
+    }
+}

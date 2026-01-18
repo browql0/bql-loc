@@ -1,16 +1,28 @@
-import React from 'react';
-import { AlertTriangle, X } from 'lucide-react';
+import React, { useEffect } from 'react';
+import ReactDOM from 'react-dom';
+import { Trash2, X } from 'lucide-react';
 import './DeleteConfirmModal.css';
 
 const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, agencyName, loading }) => {
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
-    return (
+    return ReactDOM.createPortal(
         <div className="confirm-modal-overlay" onClick={onClose}>
             <div className="confirm-modal-card animate-scale-up" onClick={e => e.stopPropagation()}>
                 <div className="confirm-header">
                     <div className="warning-icon-bg">
-                        <AlertTriangle size={24} />
+                        <Trash2 size={24} />
                     </div>
                     <button className="confirm-close-btn" onClick={onClose}>
                         <X size={20} />
@@ -34,8 +46,10 @@ const DeleteConfirmModal = ({ isOpen, onClose, onConfirm, agencyName, loading })
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 
 export default DeleteConfirmModal;
+

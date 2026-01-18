@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import {
     Settings as SettingsIcon,
@@ -6,99 +6,415 @@ import {
     Bell,
     Shield,
     Database,
-    Mail,
     Globe,
     Lock,
     AlertCircle,
-    CheckCircle2
+    CheckCircle2,
+    Loader2,
+    RefreshCw,
+    Mail,
+    Users,
+    Key,
+    Clock,
+    Zap,
+    Server,
+    Webhook,
+    Sliders,
+    RotateCcw,
+    ChevronRight
 } from 'lucide-react';
-import './settings.css';
+import SettingsConfirmModal from './SettingsConfirmModal';
+import './Settings.css';
 
 const Settings = () => {
-    const [activeTab, setActiveTab] = useState('general');
-    const [loading, setLoading] = useState(false);
-    const [saveStatus, setSaveStatus] = useState(null);
-    const [settings, setSettings] = useState({
-        siteName: 'BQL Rent Systems',
-        siteEmail: 'contact@bql.com',
-        maintenanceMode: false,
-        allowRegistrations: true,
-        emailNotifications: true,
-        maxAgencies: 100,
-        sessionTimeout: 30
+    // State Management
+    const [activeTab, setActiveTab] = useState('system');
+    const [settings, setSettings] = useState([]);
+    const [originalSettings, setOriginalSettings] = useState({});
+    const [pendingChanges, setPendingChanges] = useState({});
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [saveStatus, setSaveStatus] = useState(null); // 'success' | 'error' | null
+    const [error, setError] = useState(null);
+
+    // Prevent double submit
+    const saveLockRef = useRef(false);
+
+    // Confirmation Modal State
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        setting: null,
+        newValue: null
     });
+    const [confirmSubmitting, setConfirmSubmitting] = useState(false);
 
-    useEffect(() => {
-        // Load settings from database or use defaults
-        loadSettings();
-    }, []);
+    // Tab configuration with icons
+    const tabs = useMemo(() => [
+        { id: 'system', label: 'Système', icon: Database, color: 'blue' },
+        { id: 'security', label: 'Sécurité', icon: Shield, color: 'orange' },
+        { id: 'notifications', label: 'Notifications', icon: Bell, color: 'purple' },
+        { id: 'integrations', label: 'Intégrations', icon: Globe, color: 'green' }
+    ], []);
 
-    const loadSettings = async () => {
-        try {
-            // In a real app, you'd fetch from a settings table
-            // For now, we'll use local state defaults
-        } catch (error) {
-            // Error is handled silently, will use default settings
-        }
+    // Icon mapping for settings
+    const settingIcons = {
+        site_name: Globe,
+        site_email: Mail,
+        max_agencies: Users,
+        allow_registrations: Users,
+        maintenance_mode: Lock,
+        session_timeout: Clock,
+        force_2fa: Key,
+        password_min_length: Lock,
+        email_notifications: Bell,
+        notify_new_agency: Bell,
+        notify_new_user: Bell,
+        api_rate_limit: Zap,
+        webhook_url: Webhook,
+        external_api_key: Key
     };
 
-    const handleSave = async () => {
+    // Load settings from backend
+    const loadSettings = useCallback(async () => {
         setLoading(true);
-        setSaveStatus(null);
+        setError(null);
 
         try {
-            // In a real app, save to database
-            // For now, simulate save
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const { data, error: rpcError } = await supabase.rpc('get_all_settings');
 
-            setSaveStatus('success');
-            setTimeout(() => setSaveStatus(null), 3000);
-        } catch (error) {
-            setSaveStatus('error');
-            setTimeout(() => setSaveStatus(null), 3000);
+            if (rpcError) throw rpcError;
+
+            if (data && Array.isArray(data)) {
+                setSettings(data);
+                // Store original values for dirty checking
+                const originals = {};
+                data.forEach(s => {
+                    originals[s.key] = s.value;
+                });
+                setOriginalSettings(originals);
+                setPendingChanges({});
+            }
+        } catch (err) {
+            console.error('Error loading settings:', err);
+            setError(err.message || 'Erreur lors du chargement des paramètres');
         } finally {
             setLoading(false);
         }
+    }, []);
+
+    // Initial load
+    useEffect(() => {
+        loadSettings();
+    }, [loadSettings]);
+
+    // Parse JSONB value to proper type
+    const parseValue = (value, dataType) => {
+        if (value === null || value === undefined) return '';
+
+        try {
+            // Value is already parsed from JSONB
+            if (dataType === 'boolean') {
+                return value === true || value === 'true';
+            }
+            if (dataType === 'number') {
+                return typeof value === 'number' ? value : parseInt(value, 10) || 0;
+            }
+            // String types
+            return String(value).replace(/^"|"$/g, '');
+        } catch {
+            return value;
+        }
     };
 
-    const handleChange = (key, value) => {
-        setSettings(prev => ({ ...prev, [key]: value }));
+    // Check if there are unsaved changes
+    const hasChanges = useMemo(() => {
+        return Object.keys(pendingChanges).length > 0;
+    }, [pendingChanges]);
+
+    // Get settings for current tab
+    const currentTabSettings = useMemo(() => {
+        return settings.filter(s => s.category === activeTab);
+    }, [settings, activeTab]);
+
+    // Stats for header
+    const stats = useMemo(() => {
+        const total = settings.length;
+        const critical = settings.filter(s => s.is_critical).length;
+        const sensitive = settings.filter(s => s.is_sensitive).length;
+        return { total, critical, sensitive };
+    }, [settings]);
+
+    // Handle value change
+    const handleChange = (key, value, setting) => {
+        // If critical setting, show confirmation modal
+        if (setting.is_critical) {
+            setConfirmModal({
+                isOpen: true,
+                setting: { ...setting, value: parseValue(originalSettings[key] ?? setting.value, setting.data_type) },
+                newValue: value
+            });
+            return;
+        }
+
+        // Apply change immediately for non-critical
+        applyChange(key, value, setting.data_type);
+    };
+
+    // Apply change to pending changes
+    const applyChange = (key, value, dataType) => {
+        // Convert to proper JSONB format
+        let jsonValue;
+        if (dataType === 'boolean') {
+            jsonValue = value;
+        } else if (dataType === 'number') {
+            jsonValue = parseInt(value, 10) || 0;
+        } else {
+            jsonValue = String(value);
+        }
+
+        // Check if different from original
+        const originalValue = originalSettings[key];
+        if (JSON.stringify(jsonValue) === JSON.stringify(originalValue)) {
+            // Remove from pending if reverted to original
+            const newPending = { ...pendingChanges };
+            delete newPending[key];
+            setPendingChanges(newPending);
+        } else {
+            setPendingChanges(prev => ({
+                ...prev,
+                [key]: jsonValue
+            }));
+        }
+
+        // Update local display
+        setSettings(prev => prev.map(s =>
+            s.key === key ? { ...s, value: jsonValue } : s
+        ));
+    };
+
+    // Handle confirmation modal confirm
+    const handleConfirmChange = async () => {
+        if (!confirmModal.setting) return;
+
+        setConfirmSubmitting(true);
+
+        try {
+            const key = confirmModal.setting.key;
+            const value = confirmModal.newValue;
+
+            // Save critical setting immediately
+            const { data, error: rpcError } = await supabase.rpc('update_setting', {
+                p_key: key,
+                p_value: JSON.stringify(value)
+            });
+
+            if (rpcError) throw rpcError;
+            if (!data?.success) throw new Error(data?.error || 'Erreur de mise à jour');
+
+            // Update local state
+            setSettings(prev => prev.map(s =>
+                s.key === key ? { ...s, value: value } : s
+            ));
+            setOriginalSettings(prev => ({
+                ...prev,
+                [key]: value
+            }));
+
+            setSaveStatus('success');
+            setTimeout(() => setSaveStatus(null), 3000);
+        } catch (err) {
+            console.error('Error updating critical setting:', err);
+            setSaveStatus('error');
+            setTimeout(() => setSaveStatus(null), 3000);
+        } finally {
+            setConfirmSubmitting(false);
+            setConfirmModal({ isOpen: false, setting: null, newValue: null });
+        }
+    };
+
+    // Save all pending changes
+    const handleSaveAll = async () => {
+        if (!hasChanges || saveLockRef.current) return;
+
+        saveLockRef.current = true;
+        setSaving(true);
         setSaveStatus(null);
+
+        try {
+            const settingsToUpdate = Object.entries(pendingChanges).map(([key, value]) => ({
+                key,
+                value
+            }));
+
+            const { data, error: rpcError } = await supabase.rpc('update_settings_batch', {
+                p_settings: settingsToUpdate
+            });
+
+            if (rpcError) throw rpcError;
+            if (!data?.success && data?.errors?.length > 0) {
+                throw new Error(data.errors[0]?.error || 'Erreur de mise à jour');
+            }
+
+            // Update original values
+            setOriginalSettings(prev => ({
+                ...prev,
+                ...pendingChanges
+            }));
+            setPendingChanges({});
+            setSaveStatus('success');
+            setTimeout(() => setSaveStatus(null), 3000);
+        } catch (err) {
+            console.error('Error saving settings:', err);
+            setSaveStatus('error');
+            setTimeout(() => setSaveStatus(null), 3000);
+        } finally {
+            setSaving(false);
+            saveLockRef.current = false;
+        }
     };
 
-    const tabs = [
-        { id: 'general', label: 'Général', icon: SettingsIcon },
-        { id: 'security', label: 'Sécurité', icon: Shield },
-        { id: 'notifications', label: 'Notifications', icon: Bell },
-        { id: 'system', label: 'Système', icon: Database }
-    ];
+    // Render toggle switch
+    const renderToggle = (setting) => {
+        const value = parseValue(
+            pendingChanges[setting.key] ?? setting.value,
+            setting.data_type
+        );
+        const isOn = value === true;
+
+        return (
+            <button
+                className={`settings-toggle ${isOn ? 'on' : 'off'}`}
+                onClick={() => handleChange(setting.key, !isOn, setting)}
+                aria-pressed={isOn}
+                aria-label={setting.label}
+            >
+                <span className="toggle-track">
+                    <span className="toggle-thumb"></span>
+                </span>
+                <span className="toggle-label">{isOn ? 'Activé' : 'Désactivé'}</span>
+            </button>
+        );
+    };
+
+    // Render input field based on data type
+    const renderInput = (setting) => {
+        const value = parseValue(
+            pendingChanges[setting.key] ?? setting.value,
+            setting.data_type
+        );
+        const Icon = settingIcons[setting.key] || SettingsIcon;
+        const validation = setting.validation_rules || {};
+
+        if (setting.data_type === 'boolean') {
+            return renderToggle(setting);
+        }
+
+        return (
+            <div className="settings-input-wrapper">
+                <div className="input-icon">
+                    <Icon size={18} />
+                </div>
+                <input
+                    type={setting.data_type === 'number' ? 'number' : setting.data_type === 'email' ? 'email' : 'text'}
+                    value={setting.is_sensitive && value === '********' ? '' : value}
+                    onChange={(e) => handleChange(setting.key, e.target.value, setting)}
+                    placeholder={setting.is_sensitive ? '••••••••' : ''}
+                    min={validation.min}
+                    max={validation.max}
+                    maxLength={validation.maxLength}
+                    required={validation.required}
+                    className="settings-input"
+                    aria-label={setting.label}
+                />
+            </div>
+        );
+    };
+
+    // Get tab icon color class
+    const getTabColorClass = (tabId) => {
+        const tab = tabs.find(t => t.id === tabId);
+        return tab?.color || 'blue';
+    };
+
+    // Loading state
+    if (loading) {
+        return (
+            <div className="settings-tab">
+                <div className="settings-loading">
+                    <Loader2 size={32} className="spin" />
+                    <p>Chargement des paramètres...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Error state
+    if (error && settings.length === 0) {
+        return (
+            <div className="settings-tab">
+                <div className="settings-error">
+                    <AlertCircle size={32} />
+                    <p>{error}</p>
+                    <button onClick={loadSettings} className="retry-btn">
+                        <RefreshCw size={18} />
+                        Réessayer
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="settings-container">
-            <div className="settings-header">
-                <div>
-                    <h2>Paramètres Globaux</h2>
-                    <p>Gérez les paramètres de la plateforme</p>
+        <div className="settings-tab">
+            {/* Header - Matches UsersTab */}
+            <header className="settings-header-modern">
+                <div className="header-content">
+                    <h1>Paramètres Globaux</h1>
+                    <p className="header-subtitle">Configuration et gestion de la plateforme</p>
                 </div>
-                <button
-                    className="btn-save"
-                    onClick={handleSave}
-                    disabled={loading}
-                >
-                    {loading ? (
-                        <>
-                            <div className="spinner-small"></div>
-                            <span>Sauvegarde...</span>
-                        </>
-                    ) : (
-                        <>
-                            <Save size={18} />
-                            <span>Sauvegarder</span>
-                        </>
+                <div className="header-stats">
+                    <div className="stat-pill">
+                        <Sliders size={14} />
+                        <span>{stats.total} Paramètres</span>
+                    </div>
+                    <div className="stat-pill warning">
+                        <Shield size={14} />
+                        <span>{stats.critical} Critiques</span>
+                    </div>
+                    {hasChanges && (
+                        <div className="stat-pill danger pulse">
+                            <AlertCircle size={14} />
+                            <span>{Object.keys(pendingChanges).length} non sauvegardé(s)</span>
+                        </div>
                     )}
-                </button>
+                </div>
+            </header>
+
+            {/* KPI Cards - Quick Stats */}
+            <div className="kpi-grid-modern">
+                {tabs.map(tab => {
+                    const tabSettings = settings.filter(s => s.category === tab.id);
+                    const Icon = tab.icon;
+                    return (
+                        <div
+                            key={tab.id}
+                            className={`kpi-card-modern ${tab.color} ${activeTab === tab.id ? 'active' : ''}`}
+                            onClick={() => setActiveTab(tab.id)}
+                        >
+                            <div className="kpi-icon-modern">
+                                <Icon size={20} />
+                            </div>
+                            <div className="kpi-content-modern">
+                                <span className="kpi-label-modern">{tab.label}</span>
+                                <span className="kpi-value-modern">{tabSettings.length}</span>
+                            </div>
+                            <ChevronRight size={16} className="kpi-arrow" />
+                        </div>
+                    );
+                })}
             </div>
 
+            {/* Save Status Toast */}
             {saveStatus && (
                 <div className={`save-status ${saveStatus}`}>
                     {saveStatus === 'success' ? (
@@ -115,152 +431,111 @@ const Settings = () => {
                 </div>
             )}
 
-            <div className="settings-layout">
-                <div className="settings-sidebar">
-                    {tabs.map(tab => (
-                        <button
-                            key={tab.id}
-                            className={`settings-tab ${activeTab === tab.id ? 'active' : ''}`}
-                            onClick={() => setActiveTab(tab.id)}
-                        >
-                            <tab.icon size={20} />
-                            <span>{tab.label}</span>
-                        </button>
-                    ))}
+
+
+            {/* Content Panel */}
+            <div className="settings-content-card">
+                <div className="content-header">
+                    <div className="content-title-row">
+                        <h2>{tabs.find(t => t.id === activeTab)?.label}</h2>
+                        <span className="content-badge">{currentTabSettings.length} paramètres</span>
+                    </div>
+                    <p className="content-description">
+                        {activeTab === 'system' && 'Configuration générale du système et de la plateforme.'}
+                        {activeTab === 'security' && 'Paramètres de sécurité et de contrôle d\'accès.'}
+                        {activeTab === 'notifications' && 'Gestion des alertes et notifications.'}
+                        {activeTab === 'integrations' && 'Connexions API et intégrations externes.'}
+                    </p>
                 </div>
 
-                <div className="settings-content">
-                    {activeTab === 'general' && (
-                        <div className="settings-section">
-                            <h3>Paramètres Généraux</h3>
-                            <div className="settings-form">
-                                <div className="form-group">
-                                    <label>
-                                        <Globe size={18} />
-                                        Nom du site
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={settings.siteName}
-                                        onChange={(e) => handleChange('siteName', e.target.value)}
-                                        maxLength={100}
-                                    />
+                {/* Settings Form */}
+                <div
+                    className="settings-form"
+                    role="tabpanel"
+                    id={`panel-${activeTab}`}
+                    aria-labelledby={activeTab}
+                >
+                    {currentTabSettings.length === 0 ? (
+                        <div className="settings-empty">
+                            <Server size={32} />
+                            <p>Aucun paramètre dans cette catégorie</p>
+                        </div>
+                    ) : (
+                        currentTabSettings.map(setting => (
+                            <div
+                                key={setting.key}
+                                className={`form-group-modern ${setting.is_critical ? 'critical' : ''} ${pendingChanges[setting.key] !== undefined ? 'changed' : ''}`}
+                            >
+                                <div className="form-group-left">
+                                    <div className="form-label-row">
+                                        <label htmlFor={setting.key}>
+                                            {setting.label}
+                                        </label>
+                                        {setting.is_critical && (
+                                            <span className="critical-badge" title="Paramètre critique">
+                                                <Shield size={12} />
+                                                Critique
+                                            </span>
+                                        )}
+                                        {setting.is_sensitive && (
+                                            <span className="sensitive-badge" title="Valeur sensible">
+                                                <Lock size={12} />
+                                            </span>
+                                        )}
+                                    </div>
+                                    {setting.description && (
+                                        <p className="form-description">{setting.description}</p>
+                                    )}
                                 </div>
-                                <div className="form-group">
-                                    <label>
-                                        <Mail size={18} />
-                                        Email de contact
-                                    </label>
-                                    <input
-                                        type="email"
-                                        value={settings.siteEmail}
-                                        onChange={(e) => handleChange('siteEmail', e.target.value)}
-                                        maxLength={255}
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>
-                                        <Database size={18} />
-                                        Nombre maximum d'agences
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={settings.maxAgencies}
-                                        onChange={(e) => handleChange('maxAgencies', parseInt(e.target.value) || 0)}
-                                        min="1"
-                                        max="1000"
-                                    />
-                                </div>
-                                <div className="form-group checkbox-group">
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            checked={settings.allowRegistrations}
-                                            onChange={(e) => handleChange('allowRegistrations', e.target.checked)}
-                                        />
-                                        <span>Autoriser les nouvelles inscriptions</span>
-                                    </label>
+                                <div className="form-group-right">
+                                    {renderInput(setting)}
                                 </div>
                             </div>
-                        </div>
+                        ))
                     )}
+                </div>
 
-                    {activeTab === 'security' && (
-                        <div className="settings-section">
-                            <h3>Paramètres de Sécurité</h3>
-                            <div className="settings-form">
-                                <div className="form-group">
-                                    <label>
-                                        <Lock size={18} />
-                                        Timeout de session (minutes)
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={settings.sessionTimeout}
-                                        onChange={(e) => handleChange('sessionTimeout', parseInt(e.target.value) || 0)}
-                                        min="5"
-                                        max="480"
-                                    />
-                                    <small>Durée d'inactivité avant déconnexion automatique</small>
-                                </div>
-                                <div className="form-group checkbox-group">
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            checked={settings.maintenanceMode}
-                                            onChange={(e) => handleChange('maintenanceMode', e.target.checked)}
-                                        />
-                                        <span>Mode maintenance</span>
-                                    </label>
-                                    <small>Désactive l'accès public pendant la maintenance</small>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'notifications' && (
-                        <div className="settings-section">
-                            <h3>Notifications</h3>
-                            <div className="settings-form">
-                                <div className="form-group checkbox-group">
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            checked={settings.emailNotifications}
-                                            onChange={(e) => handleChange('emailNotifications', e.target.checked)}
-                                        />
-                                        <span>Activer les notifications par email</span>
-                                    </label>
-                                    <small>Recevoir des emails pour les événements importants</small>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'system' && (
-                        <div className="settings-section">
-                            <h3>Informations Système</h3>
-                            <div className="system-info">
-                                <div className="info-card">
-                                    <h4>Version</h4>
-                                    <p>1.0.0</p>
-                                </div>
-                                <div className="info-card">
-                                    <h4>Base de données</h4>
-                                    <p>Supabase</p>
-                                </div>
-                                <div className="info-card">
-                                    <h4>Statut</h4>
-                                    <p className="status-online">En ligne</p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                {/* Save Actions Footer */}
+                <div className="settings-footer">
+                    <button
+                        className="btn-reset"
+                        onClick={loadSettings}
+                        disabled={saving}
+                    >
+                        <RotateCcw size={16} />
+                        <span>Réinitialiser</span>
+                    </button>
+                    <button
+                        className={`btn-save-modern ${saving ? 'saving' : ''} ${!hasChanges ? 'disabled' : ''}`}
+                        onClick={handleSaveAll}
+                        disabled={saving || !hasChanges}
+                    >
+                        {saving ? (
+                            <>
+                                <Loader2 size={18} className="spin" />
+                                <span>Sauvegarde...</span>
+                            </>
+                        ) : (
+                            <>
+                                <Save size={18} />
+                                <span>Sauvegarder les modifications</span>
+                            </>
+                        )}
+                    </button>
                 </div>
             </div>
+
+            {/* Confirmation Modal */}
+            <SettingsConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ isOpen: false, setting: null, newValue: null })}
+                onConfirm={handleConfirmChange}
+                setting={confirmModal.setting}
+                newValue={confirmModal.newValue}
+                isSubmitting={confirmSubmitting}
+            />
         </div>
     );
 };
 
 export default Settings;
-

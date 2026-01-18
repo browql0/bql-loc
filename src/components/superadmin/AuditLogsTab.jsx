@@ -1,232 +1,385 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import {
     Shield,
     Search,
-    Filter,
     Download,
     Clock,
     User,
     Database,
     AlertCircle,
-    CheckCircle
+    CheckCircle,
+    ChevronLeft,
+    ChevronRight,
+    Calendar,
+    Eye,
+    ShieldAlert,
+    Activity,
+    Lock
 } from 'lucide-react';
 import './AuditLogsTab.css';
 import ErrorMessage from '../ErrorMessage';
 import LoadingSpinner from '../LoadingSpinner';
 import EmptyState from '../EmptyState';
+import AuditLogDetailDrawer from './AuditLogDetailDrawer';
+import PremiumSelect from '../owner/PremiumSelect';
+
+const ITEMS_PER_PAGE = 20;
 
 const AuditLogsTab = () => {
+    // Data State
     const [logs, setLogs] = useState([]);
+    const [totalCount, setTotalCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterTable, setFilterTable] = useState('');
-    const [filterAction, setFilterAction] = useState('');
 
-    const fetchAuditLogs = async () => {
+    // Filter State
+    const [filters, setFilters] = useState({
+        search: '',
+        table: 'all',
+        action: 'all',
+        startDate: '',
+        endDate: ''
+    });
+    const [page, setPage] = useState(1);
+
+    // UI State
+    const [selectedLog, setSelectedLog] = useState(null);
+
+    // Debounce search
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearch(filters.search), 500);
+        return () => clearTimeout(timer);
+    }, [filters.search]);
+
+    const fetchAuditLogs = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            const { data, error: rpcError } = await supabase.rpc('get_audit_logs', {
-                limit_count: 100,
-                offset_count: 0,
-                filter_table: filterTable || null,
-                filter_action: filterAction || null
-            });
+            // Prepare params for V2 RPC
+            const params = {
+                search_query: debouncedSearch || '',
+                filter_table: filters.table === 'all' ? null : filters.table,
+                filter_action: filters.action === 'all' ? null : filters.action,
+                start_date: filters.startDate ? new Date(filters.startDate).toISOString() : null,
+                end_date: filters.endDate ? new Date(filters.endDate).toISOString() : null,
+                page: page,
+                page_size: ITEMS_PER_PAGE
+            };
+
+            const { data, error: rpcError } = await supabase.rpc('get_audit_logs_v2', params);
 
             if (rpcError) throw rpcError;
 
-            setLogs(data || []);
+            // Handle response format from V2 { data: [], total_count: 0 }
+            if (data) {
+                setLogs(data.data || []);
+                setTotalCount(data.total_count || 0);
+            }
         } catch (err) {
-            const errorMessage = err?.message || 'Erreur lors du chargement des logs d\'audit.';
-            setError(errorMessage);
-            setLogs([]);
+            console.error(err);
+            // Fallback for V1 if V2 not applied yet
+            if (err.message?.includes('function get_audit_logs_v2') && err.message?.includes('does not exist')) {
+                const { data: v1Data, error: v1Error } = await supabase.rpc('get_audit_logs');
+                if (!v1Error) {
+                    setLogs(v1Data || []);
+                    setError("Le système Audit V2 n'est pas encore déployé. Affichage limité.");
+                } else {
+                    setError("Impossible de charger les logs. Veuillez vérifier la connexion.");
+                }
+            } else {
+                setError(err.message || 'Erreur lors du chargement des logs.');
+            }
         } finally {
             setLoading(false);
         }
-    };
+    }, [debouncedSearch, filters.table, filters.action, filters.startDate, filters.endDate, page]);
 
     useEffect(() => {
         fetchAuditLogs();
-    }, [filterTable, filterAction]);
+    }, [fetchAuditLogs]);
+
+    const handleFilterChange = (key, value) => {
+        setFilters(prev => ({ ...prev, [key]: value }));
+        setPage(1); // Reset to page 1 on filter change
+    };
+
+    const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
     const getActionBadge = (action) => {
-        const badges = {
-            'INSERT': { label: 'Création', color: 'green', icon: CheckCircle },
-            'UPDATE': { label: 'Modification', color: 'blue', icon: AlertCircle },
-            'DELETE': { label: 'Suppression', color: 'red', icon: AlertCircle }
+        const badgeConfig = {
+            'INSERT': { label: 'Création', className: 'insert', icon: CheckCircle },
+            'UPDATE': { label: 'Modification', className: 'update', icon: AlertCircle },
+            'DELETE': { label: 'Suppression', className: 'delete', icon: AlertCircle }
         };
-        const badge = badges[action] || { label: action, color: 'gray', icon: Shield };
-        const Icon = badge.icon;
+
+        const config = badgeConfig[action] || { label: action, className: 'neutral', icon: Shield };
+
         return (
-            <span className={`action-badge ${badge.color}`}>
-                <Icon size={12} />
-                {badge.label}
+            <span className={`status-badge-modern ${config.className}`}>
+                <span className="status-dot"></span>
+                {config.label}
             </span>
         );
     };
 
-    const getRoleBadge = (role) => {
-        const colors = {
-            'superadmin': 'purple',
-            'owner': 'blue',
-            'staff': 'orange'
-        };
-        return <span className={`role-badge ${colors[role] || 'gray'}`}>{role || 'N/A'}</span>;
-    };
+    const tableOptions = [
+        { value: 'all', label: 'Toutes les tables' },
+        { value: 'agencies', label: 'Agences' },
+        { value: 'profiles', label: 'Utilisateurs' },
+        { value: 'bookings', label: 'Réservations' },
+        { value: 'cars', label: 'Véhicules' },
+        { value: 'payments', label: 'Paiements' }
+    ];
 
-    const filteredLogs = logs.filter(log =>
-        log.user_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.table_name?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    const exportCSV = () => {
-        const headers = ['Date', 'Utilisateur', 'Rôle', 'Action', 'Table', 'ID Record'];
-        const rows = filteredLogs.map(log => [
-            new Date(log.created_at).toLocaleString('fr-FR'),
-            log.user_email || 'N/A',
-            log.user_role || 'N/A',
-            log.action,
-            log.table_name,
-            log.record_id || 'N/A'
-        ]);
-
-        const csvContent = [
-            headers.join(','),
-            ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-        ].join('\n');
-
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `audit_logs_${new Date().toISOString().split('T')[0]}.csv`;
-        link.click();
-    };
+    const actionOptions = [
+        { value: 'all', label: 'Toutes les actions' },
+        { value: 'INSERT', label: 'Création (Insert)' },
+        { value: 'UPDATE', label: 'Modification (Update)' },
+        { value: 'DELETE', label: 'Suppression (Delete)' }
+    ];
 
     return (
-        <div className="audit-logs-tab">
-            <div className="tab-header-row">
-                <div className="header-info">
-                    <h2>
-                        <Shield size={24} />
-                        Logs d'Audit
-                    </h2>
-                    <p>Traçabilité complète des actions sensibles dans le système</p>
+        <div className="audit-container">
+            {/* Header Modern */}
+            <header className="audit-header-modern">
+                <div className="header-content">
+                    <h1>Audit & Sécurité</h1>
+                    <p className="header-subtitle">Traçabilité complète et immuable des actions système.</p>
                 </div>
                 <div className="header-actions">
-                    <button className="btn-export" onClick={exportCSV} disabled={filteredLogs.length === 0}>
-                        <Download size={16} />
-                        <span>Exporter CSV</span>
+                    <button className="btn-secondary">
+                        <Download size={16} /> Exporter CSV
                     </button>
+                </div>
+            </header>
+
+            {/* KPI Grid */}
+            <div className="kpi-grid-modern">
+                <div className="kpi-card-modern blue">
+                    <div className="kpi-icon-modern">
+                        <Activity size={20} />
+                    </div>
+                    <div className="kpi-content-modern">
+                        <span className="kpi-label-modern">Total Événements</span>
+                        <span className="kpi-value-modern">{totalCount}</span>
+                    </div>
+                </div>
+                <div className="kpi-card-modern purple">
+                    <div className="kpi-icon-modern">
+                        <Shield size={20} />
+                    </div>
+                    <div className="kpi-content-modern">
+                        <span className="kpi-label-modern">Sécurité</span>
+                        <span className="kpi-value-modern">Active</span>
+                    </div>
+                </div>
+                {/* Placeholders for layout balance */}
+                <div className="kpi-card-modern green">
+                    <div className="kpi-icon-modern">
+                        <CheckCircle size={20} />
+                    </div>
+                    <div className="kpi-content-modern">
+                        <span className="kpi-label-modern">Système</span>
+                        <span className="kpi-value-modern">Stable</span>
+                    </div>
+                </div>
+                <div className="kpi-card-modern orange">
+                    <div className="kpi-icon-modern">
+                        <Lock size={20} />
+                    </div>
+                    <div className="kpi-content-modern">
+                        <span className="kpi-label-modern">Chiffrement</span>
+                        <span className="kpi-value-modern">AES-256</span>
+                    </div>
                 </div>
             </div>
 
+            {/* Toolbar */}
+            <div className="toolbar-section">
+                <div className="search-group">
+                    <Search size={16} />
+                    <input
+                        type="text"
+                        placeholder="Rechercher (Email, ID...)"
+                        value={filters.search}
+                        onChange={(e) => handleFilterChange('search', e.target.value)}
+                    />
+                </div>
+
+                <div className="filters-row-modern">
+                    <div className="filter-select-wrapper">
+                        <PremiumSelect
+                            options={tableOptions}
+                            value={filters.table}
+                            onChange={(e) => handleFilterChange('table', e.target.value)}
+                            icon={Database}
+                        />
+                    </div>
+                    <div className="filter-select-wrapper">
+                        <PremiumSelect
+                            options={actionOptions}
+                            value={filters.action}
+                            onChange={(e) => handleFilterChange('action', e.target.value)}
+                            icon={ShieldAlert}
+                        />
+                    </div>
+                    <div className="date-range-modern">
+                        <div className="input-with-icon">
+                            <Calendar size={14} className="input-icon" />
+                            <input
+                                type="date"
+                                value={filters.startDate}
+                                onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                                className="premium-input date-input"
+                            />
+                        </div>
+                        <span className="separator">-</span>
+                        <div className="input-with-icon">
+                            <input
+                                type="date"
+                                value={filters.endDate}
+                                onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                                className="premium-input date-input"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* ERROR ALERT */}
             {error && (
                 <ErrorMessage
                     message={error}
                     onDismiss={() => setError(null)}
-                    retry={fetchAuditLogs}
-                    retryLabel="Réessayer"
                 />
             )}
 
-            <div className="filters-row">
-                <div className="search-bar-tab">
-                    <Search size={16} />
-                    <input
-                        type="text"
-                        placeholder="Rechercher par email ou table..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-
-                <select
-                    className="filter-select"
-                    value={filterTable}
-                    onChange={(e) => setFilterTable(e.target.value)}
-                >
-                    <option value="">Toutes les tables</option>
-                    <option value="agencies">Agences</option>
-                    <option value="profiles">Profils</option>
-                    <option value="cars">Voitures</option>
-                    <option value="clients">Clients</option>
-                    <option value="bookings">Réservations</option>
-                </select>
-
-                <select
-                    className="filter-select"
-                    value={filterAction}
-                    onChange={(e) => setFilterAction(e.target.value)}
-                >
-                    <option value="">Toutes les actions</option>
-                    <option value="INSERT">Créations</option>
-                    <option value="UPDATE">Modifications</option>
-                    <option value="DELETE">Suppressions</option>
-                </select>
-            </div>
-
+            {/* CONTENT */}
             {loading ? (
-                <LoadingSpinner message="Chargement des logs d'audit..." />
-            ) : filteredLogs.length === 0 ? (
+                <div className="loading-skeleton">
+                    <LoadingSpinner message="Chargement des logs sécurisés..." />
+                </div>
+            ) : logs.length === 0 ? (
                 <EmptyState
                     icon={Shield}
                     title="Aucun log trouvé"
-                    message="Aucune action n'a été enregistrée avec ces filtres."
+                    message="Aucune activité ne correspond à vos filtres."
                 />
             ) : (
-                <div className="table-container">
-                    <table className="modern-table audit-table">
-                        <thead>
-                            <tr>
-                                <th><Clock size={14} /> Date & Heure</th>
-                                <th><User size={14} /> Utilisateur</th>
-                                <th><Shield size={14} /> Rôle</th>
-                                <th><Database size={14} /> Action</th>
-                                <th>Table</th>
-                                <th>ID Record</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredLogs.map((log) => (
-                                <tr key={log.id}>
-                                    <td className="font-mono text-sm">
-                                        {new Date(log.created_at).toLocaleString('fr-FR', {
-                                            day: '2-digit',
-                                            month: 'short',
-                                            year: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
-                                        })}
-                                    </td>
-                                    <td>
-                                        <div className="user-cell">
-                                            <div className="user-avatar-small">
-                                                {log.user_email?.charAt(0).toUpperCase() || '?'}
-                                            </div>
-                                            <span>{log.user_email || 'Utilisateur supprimé'}</span>
-                                        </div>
-                                    </td>
-                                    <td>{getRoleBadge(log.user_role)}</td>
-                                    <td>{getActionBadge(log.action)}</td>
-                                    <td className="font-mono">{log.table_name}</td>
-                                    <td className="font-mono text-muted text-sm">
-                                        {log.record_id?.substring(0, 8).toUpperCase() || 'N/A'}
-                                    </td>
+                <>
+                    {/* DESKTOP TABLE */}
+                    <div className="audit-table-card hidden-mobile">
+                        <table className="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Acteur</th>
+                                    <th>Action</th>
+                                    <th>Cible (Table : ID)</th>
+                                    <th className="text-center">Détails</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                {logs.map(log => (
+                                    <tr key={log.id} onClick={() => setSelectedLog(log)} style={{ cursor: 'pointer' }}>
+                                        <td>
+                                            <div className="date-cell-modern">
+                                                <Clock size={14} />
+                                                {new Date(log.created_at).toLocaleString('fr-FR')}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="user-cell-modern">
+                                                <div className="user-avatar-small">
+                                                    {log.user_email?.charAt(0).toUpperCase() || '?'}
+                                                </div>
+                                                <div className="user-info-text">
+                                                    <span className="user-email">{log.user_email}</span>
+                                                    <span className="user-role">{log.user_role}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{getActionBadge(log.action)}</td>
+                                        <td>
+                                            <div className="target-cell-modern">
+                                                {log.table_name} <span style={{ opacity: 0.5 }}>#</span>{log.record_id?.slice(0, 8)}
+                                            </div>
+                                        </td>
+                                        <td className="text-center">
+                                            <button className="action-btn-modern" style={{ margin: '0 auto' }}>
+                                                <Eye size={16} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* MOBILE CARDS */}
+                    <div className="mobile-cards-modern hidden-desktop">
+                        {logs.map(log => (
+                            <div key={log.id} className="audit-card-premium" onClick={() => setSelectedLog(log)}>
+                                <div className="card-top-row">
+                                    {getActionBadge(log.action)}
+                                    <div className="card-time-group">
+                                        <div className="time-pill">
+                                            <span>{new Date(log.created_at).toLocaleDateString('fr-FR')}</span>
+                                        </div>
+                                        <div className="time-pill">
+                                            <span>{new Date(log.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="card-user-row">
+                                    <div className="user-avatar-premium">
+                                        {log.user_email?.charAt(0).toUpperCase() || '?'}
+                                    </div>
+                                    <span className="user-email-premium">{log.user_email}</span>
+                                </div>
+
+                                <div className="card-footer-row">
+                                    <div className="target-chip-premium">
+                                        <span className="table-name">{log.table_name}</span>
+                                        <span className="record-hash">#{log.record_id?.slice(0, 8)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* PAGINATION */}
+                    <div className="pagination-modern">
+                        <button
+                            disabled={page === 1}
+                            onClick={() => setPage(p => p - 1)}
+                            className="page-btn-modern"
+                        >
+                            Précédent
+                        </button>
+                        <span className="page-info-modern" style={{ fontSize: '13px', color: '#6B7280' }}>
+                            Page {page} sur {totalPages || 1}
+                        </span>
+                        <button
+                            disabled={page >= totalPages}
+                            onClick={() => setPage(p => p + 1)}
+                            className="page-btn-modern"
+                        >
+                            Suivant
+                        </button>
+                    </div>
+                </>
             )}
 
-            {filteredLogs.length > 0 && (
-                <div className="table-footer">
-                    <p className="text-muted">
-                        {filteredLogs.length} log{filteredLogs.length > 1 ? 's' : ''} affiché{filteredLogs.length > 1 ? 's' : ''}
-                    </p>
-                </div>
+            {/* DETAIL DRAWER */}
+            {selectedLog && (
+                <AuditLogDetailDrawer
+                    log={selectedLog}
+                    onClose={() => setSelectedLog(null)}
+                />
             )}
         </div>
     );

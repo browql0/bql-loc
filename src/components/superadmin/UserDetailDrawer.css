@@ -1,0 +1,370 @@
+/* 
+   User Detail Modal - Unified Premium (Matches Site & UserEditModal)
+   Surgical Instrument System
+*/
+
+.user-detail-overlay {
+    --modal-primary: #2563EB;
+    --modal-primary-light: #EFF6FF;
+    --modal-success: #10B981;
+    --modal-success-light: #D1FAE5;
+    --modal-warning: #F59E0B;
+    --modal-warning-light: #FEF3C7;
+    --modal-danger: #EF4444;
+    --modal-danger-light: #FEE2E2;
+    --modal-neutral-50: #F9FAFB;
+    --modal-neutral-100: #F3F4F6;
+    --modal-neutral-200: #E5E7EB;
+    --modal-neutral-300: #D1D5DB;
+    --modal-neutral-400: #9CA3AF;
+    --modal-neutral-500: #6B7280;
+    --modal-neutral-600: #4B5563;
+    --modal-neutral-900: #111827;
+
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.user-detail-overlay.active {
+    opacity: 1;
+}
+
+.user-detail-modal {
+    background: #FFFFFF;
+    width: 100%;
+    max-width: 580px;
+    border-radius: 28px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    overflow: hidden;
+    transform: scale(0.96) translateY(12px);
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.user-detail-overlay.active .user-detail-modal {
+    transform: scale(1) translateY(0);
+}
+
+/* Header */
+.modal-header-pro {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 32px;
+    border-bottom: 2px solid #F1F5F9;
+    /* High-contrast border */
+    background: #FFFFFF;
+    position: relative;
+}
+
+.modal-header-pro::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 32px;
+    width: 60px;
+    height: 2px;
+    background: #000;
+    /* Surgical accent line */
+}
+
+.modal-header-pro h2 {
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: #000000;
+    margin: 0;
+    letter-spacing: -0.03em;
+}
+
+.close-btn-pro {
+    background: #F1F5F9;
+    border: 1.5px solid #E2E8F0;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    color: #000000;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.close-btn-pro:hover {
+    background: #000000;
+    color: #FFFFFF;
+    border-color: #000000;
+    transform: rotate(90deg) scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Content */
+.modal-content-pro {
+    padding: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    background: white;
+}
+
+/* Custom Scrollbar */
+.modal-content-pro::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-content-pro::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modal-content-pro::-webkit-scrollbar-thumb {
+    background: var(--modal-neutral-200);
+    border-radius: 3px;
+}
+
+/* Hero Section */
+.user-hero-section {
+    padding: 40px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid var(--modal-neutral-100);
+    background: linear-gradient(to bottom, #FFFFFF, var(--modal-neutral-50));
+}
+
+.avatar-pro {
+    width: 88px;
+    height: 88px;
+    background: white;
+    color: var(--modal-neutral-900);
+    border: 3px solid var(--modal-neutral-100);
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.05);
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 800;
+}
+
+.user-identity-pro {
+    text-align: center;
+}
+
+.user-identity-pro h3 {
+    margin: 0 0 4px 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--modal-neutral-900);
+    letter-spacing: -0.02em;
+}
+
+.user-identity-pro .email {
+    color: var(--modal-neutral-500);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.badge-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+/* Data Sections - Surgical Instrument Style */
+.data-section {
+    padding: 32px;
+    border-bottom: 1px solid var(--modal-neutral-100);
+}
+
+.data-section:last-child {
+    border-bottom: none;
+}
+
+.section-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--modal-neutral-400);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.instrument-panel {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.instrument-field {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 16px;
+    background: var(--modal-neutral-50);
+    border-radius: 12px;
+    border: 1px solid var(--modal-neutral-100);
+    transition: all 0.2s ease;
+}
+
+.instrument-field:hover {
+    background: white;
+    border-color: var(--modal-neutral-200);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.field-icon {
+    width: 32px;
+    height: 32px;
+    background: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--modal-neutral-500);
+    border: 1px solid var(--modal-neutral-100);
+    flex-shrink: 0;
+}
+
+.field-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.f-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--modal-neutral-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.f-value {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--modal-neutral-900);
+}
+
+/* Status Badges */
+.status-badge-pro {
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-active {
+    background: var(--modal-success-light);
+    color: #065F46;
+}
+
+.status-suspended {
+    background: var(--modal-danger-light);
+    color: #991B1B;
+}
+
+.status-blocked {
+    background: var(--modal-neutral-100);
+    color: var(--modal-neutral-600);
+}
+
+/* Footer */
+.modal-footer-pro {
+    padding: 24px 32px;
+    border-top: 1px solid var(--modal-neutral-100);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    background: white;
+}
+
+.btn-secondary-pro {
+    height: 48px;
+    background: white;
+    border: 1px solid var(--modal-neutral-200);
+    border-radius: 12px;
+    color: var(--modal-neutral-600);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.btn-secondary-pro:hover {
+    background: var(--modal-neutral-50);
+    color: var(--modal-neutral-900);
+    border-color: var(--modal-neutral-300);
+}
+
+.btn-primary-pro {
+    height: 48px;
+    background: #000;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
+}
+
+.btn-primary-pro:hover {
+    background: #222;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    .user-detail-modal {
+        max-height: 95vh;
+        max-width: 100%;
+        border-radius: 24px 24px 0 0;
+        position: fixed;
+        bottom: 0;
+    }
+
+    .instrument-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-footer-pro {
+        padding: 20px;
+    }
+}

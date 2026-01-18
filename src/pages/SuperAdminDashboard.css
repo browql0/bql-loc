@@ -141,6 +141,13 @@
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     text-align: left;
     font-weight: 600;
+    outline: none;
+    /* Removed default outline */
+}
+
+.nav-item:focus,
+.nav-item:focus-visible {
+    outline: none;
 }
 
 .nav-item:hover {

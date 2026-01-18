@@ -1,7 +1,7 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 
-const LoadingSpinner = ({ size = 32, message = 'Chargement...', fullScreen = false }) => {
+const LoadingSpinner = ({ size = 32, message = 'Chargement...', fullScreen = false, color = '#94a3b8' }) => {
     const spinner = (
         <div style={{
             display: 'flex',
@@ -9,7 +9,7 @@ const LoadingSpinner = ({ size = 32, message = 'Chargement...', fullScreen = fal
             alignItems: 'center',
             justifyContent: 'center',
             gap: '1rem',
-            color: '#94a3b8',
+            color: color,
             padding: fullScreen ? '4rem 2rem' : '2rem'
         }}>
             <Loader2 size={size} className="spinner-icon" style={{

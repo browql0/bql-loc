@@ -14,6 +14,7 @@ import {
     Zap,
     BarChart3,
     Wallet,
+    Car,
     Clock,
     Settings,
     Cpu
@@ -34,9 +35,9 @@ import { ShieldAlert } from 'lucide-react';
 const AgenciesTab = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [agencies, setAgencies] = useState([]);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -46,14 +47,21 @@ const AgenciesTab = () => {
     const [errorMessage, setErrorMessage] = useState('');
     const [currentAgency, setCurrentAgency] = useState(null);
     const [actionLoading, setActionLoading] = useState(false);
+    const [actionLoadingId, setActionLoadingId] = useState(null); // Per-row loading state
     const [detailAgencyId, setDetailAgencyId] = useState(null);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
+    const [statusConfirmData, setStatusConfirmData] = useState(null); // For status toggle confirmation
 
     // Advanced Navigation State
     const [page, setPage] = useState(0);
     const [pageSize] = useState(10);
     const [totalItems, setTotalItems] = useState(0);
     const [sortConfig, setSortConfig] = useState({ column: 'created_at', direction: 'DESC' });
+
+    // Explicitly ensure modal is closed on mount to prevent automatic opening
+    useEffect(() => {
+        setIsAddModalOpen(false);
+    }, []);
 
     const protocolOptions = [
         { value: 'all', label: 'ALL_PROTOCOLS' },
@@ -101,31 +109,45 @@ const AgenciesTab = () => {
 
     const getStatusBadge = (status) => {
         const configs = {
-            active: { label: 'ACTIVE', class: 'active' },
-            suspended: { label: 'SUSPENDED', class: 'suspended' },
-            pending: { label: 'PENDING', class: 'pending' }
+            active: { label: 'Actif', class: 'active' },
+            suspended: { label: 'Suspendu', class: 'suspended' },
+            pending: { label: 'En attente', class: 'pending' }
         };
         const config = configs[status] || configs.pending;
         return (
-            <span className={`status-badge-aqueous ${config.class}`}>
+            <span className={`status-badge-modern ${config.class}`}>
+                <span className="status-dot"></span>
                 {config.label}
             </span>
         );
     };
 
-
     const handleStatusToggle = async (agencyId, currentStatus) => {
+        // Prevent double-clicks
+        if (actionLoadingId === agencyId) return;
+
         const newStatus = currentStatus === 'active' ? 'suspended' : 'active';
+        setActionLoadingId(agencyId);
+
         try {
-            const { error } = await supabase.rpc('set_agency_status', {
+            const { error, data } = await supabase.rpc('set_agency_status', {
                 agency_id_input: agencyId,
                 new_status: newStatus
             });
+
             if (error) throw error;
+            if (data && !data.success) throw new Error(data.error || 'Erreur inconnue');
+
+            // Optimistic update for better UX, then refetch
+            setAgencies(prev => prev.map(a =>
+                a.id === agencyId ? { ...a, status: newStatus } : a
+            ));
             fetchAgencies();
         } catch (err) {
-            setErrorMessage(err.message);
+            setErrorMessage(err.message || 'Erreur lors du changement de statut.');
             setIsErrorModalOpen(true);
+        } finally {
+            setActionLoadingId(null);
         }
     };
 
@@ -156,71 +178,81 @@ const AgenciesTab = () => {
         setIsEditModalOpen(true);
     };
 
+    const handleDeleteClick = (agency) => {
+        setCurrentAgency(agency);
+        setIsDeleteModalOpen(true);
+    };
+
     const handleAddSuccess = () => {
-        setSuccessMessage('L\'agence a été créée avec succès.');
-        setIsSuccessModalOpen(true);
+        // Redundant as AddAgencyModal now shows success state and delay
         fetchAgencies();
     };
-    const renderMobileCards = () => (
-        <div className="ultima-mobile-stack">
-            {agencies.map((agency) => (
-                <div key={agency.id} className="ultima-ecosystem-card">
-                    <div className="card-mesh-bg"></div>
 
-                    <div className="card-top-hud">
-                        <div
-                            className="agency-identity-cluster clickable"
+    const renderMobileCards = () => (
+        <div className="mobile-cards-modern">
+            {agencies.map((agency) => (
+                <div key={agency.id} className="agency-card-modern">
+                    <div className="card-header-modern">
+                        <div className="card-header-left">
+                            <div className="agency-avatar-modern">
+                                <Building2 size={20} />
+                            </div>
+                            <div className="agency-info">
+                                <h4>{agency.name}</h4>
+                                <span className="agency-id-sub">ID: {agency.id.slice(0, 8)}</span>
+                            </div>
+                        </div>
+                        {getStatusBadge(agency.status)}
+                    </div>
+
+                    <div className="card-stats-row">
+                        <div className="stat-item-modern">
+                            <span className="stat-label-m">Flotte</span>
+                            <span className="stat-value-m">{agency.cars_count}</span>
+                        </div>
+                        <div className="stat-item-modern">
+                            <span className="stat-label-m">Revenus Est.</span>
+                            <span className="stat-value-m">{Number(agency.revenue_est || 0).toLocaleString()}</span>
+                        </div>
+                    </div>
+
+                    <div className="mobile-actions-row">
+                        <button
+                            className="action-btn-new edit"
+                            onClick={() => handleEditClick(agency)}
+                            disabled={actionLoadingId === agency.id}
+                        >
+                            <Pencil size={18} />
+                        </button>
+                        <button
+                            className={`action-btn-new ${agency.status === 'active' ? 'suspend' : 'activate'}`}
+                            onClick={() => handleStatusToggle(agency.id, agency.status)}
+                            disabled={actionLoadingId === agency.id}
+                        >
+                            {actionLoadingId === agency.id ? (
+                                <span className="spinner-icon" />
+                            ) : agency.status === 'active' ? (
+                                <XCircle size={18} />
+                            ) : (
+                                <Zap size={18} />
+                            )}
+                        </button>
+                        <button
+                            className="action-btn-new delete"
+                            onClick={() => handleDeleteClick(agency)}
+                            disabled={actionLoadingId === agency.id}
+                        >
+                            <Trash2 size={18} />
+                        </button>
+                        <button
+                            className="action-btn-new"
                             onClick={() => {
                                 setDetailAgencyId(agency.id);
                                 setIsDetailOpen(true);
                             }}
                         >
-                            <div className="surgical-avatar neon-border">
-                                <Building2 size={18} />
-                            </div>
-                            <div className="identity-text">
-                                <h3>{agency.name}</h3>
-                                <span className="technical-id">NODE: {agency.id.slice(0, 8).toUpperCase()}</span>
-                            </div>
-                        </div>
-                        <div className="status-indicator-mini">
-                            {getStatusBadge(agency.status)}
-                        </div>
-                    </div>
-
-                    <div className="card-telemetry-horizon">
-                        <div className="telemetry-module">
-                            <label>FLOTTE</label>
-                            <div className="t-main">
-                                <span className="t-value">{agency.cars_count}</span>
-                                <div className="t-gauge"><div className="t-fill" style={{ width: `${Math.min((agency.cars_count / 20) * 100, 100)}%` }}></div></div>
-                            </div>
-                        </div>
-                        <div className="telemetry-module highlight">
-                            <label>REVENU EST.</label>
-                            <div className="t-main">
-                                <span className="t-value">{Number(agency.revenue_est || 0).toLocaleString()}</span>
-                                <span className="t-unit">MAD</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="card-action-hud">
-                        <div className="owner-mini-chip">
-                            <div className="owner-initials">{agency.owner_name?.slice(0, 2).toUpperCase()}</div>
-                            <span>{agency.owner_name}</span>
-                        </div>
-                        <div className="hud-actions">
-                            <button className="hud-btn" onClick={() => handleEditClick(agency)}><Pencil size={18} /></button>
-                            <button className="hud-btn delete" onClick={() => handleDeleteClick(agency)}><Trash2 size={18} /></button>
-                            <button
-                                className={`hud-btn pulse-glow ${agency.status === 'active' ? 'suspend' : 'activate'}`}
-                                onClick={() => handleStatusToggle(agency.id, agency.status)}
-                                title={agency.status === 'active' ? 'Suspend protocol' : 'Initialize protocol'}
-                            >
-                                {agency.status === 'active' ? <XCircle size={18} /> : <Zap size={18} />}
-                            </button>
-                        </div>
+                            <MoreVertical size={18} />
+                        </button>
                     </div>
                 </div>
             ))}
@@ -228,75 +260,97 @@ const AgenciesTab = () => {
     );
 
     const renderDesktopTable = () => (
-        <div className="ultima-table-hull">
-            <table className="ultima-instrument-table">
+        <div className="agencies-table-card">
+            <table className="modern-table">
                 <thead>
                     <tr>
-                        <th onClick={() => handleSort('name')} className="sortable">
-                            <Satellite size={10} className="h-icon" /> SYSTEM_NODE
-                        </th>
-                        <th><User size={10} className="h-icon" /> OPERATOR</th>
-                        <th onClick={() => handleSort('status')} className="sortable">
-                            <Zap size={10} className="h-icon" /> PROTOCOL
-                        </th>
-                        <th><BarChart3 size={10} className="h-icon" /> FLEET_LOAD</th>
-                        <th><Wallet size={10} className="h-icon" /> FINANCIAL_EST</th>
-                        <th onClick={() => handleSort('created_at')} className="sortable">
-                            <Clock size={10} className="h-icon" /> TIMECODE
-                        </th>
-                        <th className="text-center"><Settings size={10} className="h-icon" /> COMMAND_ACTIONS</th>
+                        <th onClick={() => handleSort('name')} style={{ cursor: 'pointer' }}>Agence</th>
+                        <th>Opérateur</th>
+                        <th onClick={() => handleSort('status')} style={{ cursor: 'pointer' }}>Statut</th>
+                        <th>Flotte</th>
+                        <th>Revenus Est.</th>
+                        <th onClick={() => handleSort('created_at')} style={{ cursor: 'pointer' }}>Date Création</th>
+                        <th className="text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {agencies.map((agency) => (
-                        <tr key={agency.id} className="ultima-row">
+                        <tr key={agency.id}>
                             <td>
                                 <div
-                                    className="ultima-cell-identity clickable"
+                                    className="agency-name-cell"
                                     onClick={() => {
                                         setDetailAgencyId(agency.id);
                                         setIsDetailOpen(true);
                                     }}
                                 >
-                                    <div className="node-avatar">
-                                        <Building2 size={14} />
+                                    <div className="agency-avatar-modern">
+                                        <Building2 size={18} />
                                     </div>
-                                    <div className="node-info">
-                                        <span className="n-name">{agency.name}</span>
-                                        <span className="n-id">{agency.id.slice(0, 12).toUpperCase()}</span>
+                                    <div className="agency-info">
+                                        <h4>{agency.name}</h4>
+                                        <span className="agency-id-sub">#{agency.id.slice(0, 8)}</span>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                                <div className="operator-cell">
-                                    <span className="o-name">{agency.owner_name}</span>
-                                    <span className="o-email">{agency.owner_email}</span>
+                                <div className="operator-info">
+                                    <span className="operator-name">{agency.owner_name}</span>
+                                    <span className="operator-email">{agency.owner_email}</span>
                                 </div>
                             </td>
                             <td>{getStatusBadge(agency.status)}</td>
                             <td>
-                                <div className="load-instrument">
-                                    <span className="l-val">{agency.cars_count}</span>
-                                    <div className="l-gauge">
-                                        <div className="l-fill" style={{ width: `${Math.min((agency.cars_count / 15) * 100, 100)}%` }}></div>
-                                    </div>
-                                </div>
+                                <span className="metric-cell-modern">{agency.cars_count}</span>
                             </td>
-                            <td className="financial-cell">
-                                {Number(agency.revenue_est || 0).toLocaleString()} <span className="unit">MAD</span>
+                            <td>
+                                <span className="metric-cell-modern">{Number(agency.revenue_est || 0).toLocaleString()} DH</span>
                             </td>
-                            <td className="time-cell">{new Date(agency.created_at).toLocaleDateString()}</td>
-                            <td className="text-center">
-                                <div className="command-cluster-btns centered">
-                                    <button className="c-btn edit" title="Edit System Configuration" onClick={() => handleEditClick(agency)}><Pencil size={18} /></button>
+                            <td>
+                                <span className="text-sm text-gray-500">{new Date(agency.created_at).toLocaleDateString()}</span>
+                            </td>
+                            <td>
+                                <div className="action-buttons-centered">
                                     <button
-                                        className={`c-btn toggle ${agency.status === 'active' ? 'suspend' : 'activate'}`}
-                                        title={agency.status === 'active' ? 'Suspend Protocol' : 'Re-initialize Protocol'}
-                                        onClick={() => handleStatusToggle(agency.id, agency.status)}
+                                        className="action-btn-new edit"
+                                        title="Modifier"
+                                        onClick={() => handleEditClick(agency)}
+                                        disabled={actionLoadingId === agency.id}
                                     >
-                                        {agency.status === 'active' ? <XCircle size={18} /> : <Zap size={18} />}
+                                        <Pencil size={18} />
                                     </button>
-                                    <button className="c-btn delete" title="Archive Node" onClick={() => handleDeleteClick(agency)}><Trash2 size={18} /></button>
+                                    <button
+                                        className={`action-btn-new ${agency.status === 'active' ? 'suspend' : 'activate'}`}
+                                        title={agency.status === 'active' ? 'Suspendre' : 'Activer'}
+                                        onClick={() => handleStatusToggle(agency.id, agency.status)}
+                                        disabled={actionLoadingId === agency.id}
+                                    >
+                                        {actionLoadingId === agency.id ? (
+                                            <span className="spinner-icon" />
+                                        ) : agency.status === 'active' ? (
+                                            <XCircle size={18} />
+                                        ) : (
+                                            <Zap size={18} />
+                                        )}
+                                    </button>
+                                    <button
+                                        className="action-btn-new delete"
+                                        title="Supprimer"
+                                        onClick={() => handleDeleteClick(agency)}
+                                        disabled={actionLoadingId === agency.id}
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                    <button
+                                        className="action-btn-new details"
+                                        title="Voir détails"
+                                        onClick={() => {
+                                            setDetailAgencyId(agency.id);
+                                            setIsDetailOpen(true);
+                                        }}
+                                    >
+                                        <MoreVertical size={18} />
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -311,22 +365,21 @@ const AgenciesTab = () => {
         if (totalPages <= 1) return null;
 
         return (
-            <div className="pagination-controller glass-panel">
+            <div className="pagination-modern">
                 <button
                     disabled={page === 0}
                     onClick={() => setPage(prev => prev - 1)}
-                    className="pagi-btn"
+                    className="page-btn-modern"
                 >
                     Précédent
                 </button>
-                <div className="pagi-info">
-                    Page <strong>{page + 1}</strong> sur {totalPages}
-                    <span className="pagi-count">• {totalItems} Agences</span>
+                <div className="page-info-modern">
+                    Page {page + 1} sur {totalPages} ({totalItems} Agences)
                 </div>
                 <button
                     disabled={page >= totalPages - 1}
                     onClick={() => setPage(prev => prev + 1)}
-                    className="pagi-btn"
+                    className="page-btn-modern"
                 >
                     Suivant
                 </button>
@@ -334,62 +387,110 @@ const AgenciesTab = () => {
         );
     };
 
-    return (
-        <div className="ultima-agencies-hud">
-            {/* 1. Command Horizon v2 with Mesh & Telemetry */}
-            <div className="ultima-command-horizon">
-                <div className="mesh-gradient-aura"></div>
+    // --- Stats Fetching ---
+    const [stats, setStats] = useState({
+        total: 0,
+        active: 0,
+        fleet: 0,
+        revenue: 0
+    });
 
-                <div className="horizon-identity-hub">
-                    <div className="hud-badge">ULTIMA CORE v3.0</div>
-                    <h2>Command Horizon</h2>
-                    <div className="live-telemetry-nodes">
-                        <div className="t-node">
-                            <span className="t-label">SYSTEM_NODES</span>
-                            <span className="t-value">{totalItems}</span>
-                        </div>
-                        <div className="t-node">
-                            <span className="t-label">ACTIVE_LINK</span>
-                            <span className="t-value neon-glow">
-                                {agencies.filter(a => a.status === 'active').length}
-                            </span>
-                        </div>
-                        <div className="t-node hide-mobile">
-                            <span className="t-label">LATENCY</span>
-                            <span className="t-value">24ms</span>
-                        </div>
+    useEffect(() => {
+        const fetchStats = async () => {
+            const { data, error } = await supabase.rpc('get_dashboard_stats');
+            if (!error && data) {
+                setStats({
+                    total: data.metrics.agencies.total,
+                    active: data.metrics.agencies.active || 0, // Assuming this field exists or I'll use filtered length valid for small datasets, but better from RPC
+                    fleet: data.metrics.cars.total,
+                    revenue: data.metrics.revenue.total
+                });
+            }
+        };
+        fetchStats();
+    }, []);
+
+    return (
+        <div className="agencies-container">
+            {/* Header Modern */}
+            <header className="agencies-header-modern">
+                <div className="header-content">
+                    <h1>Gestion des Agences</h1>
+                    <p className="header-subtitle">Administrez les partenaires et surveillez leur performance.</p>
+                </div>
+                <div className="header-actions">
+                    <button className="btn-primary-modern" onClick={() => setIsAddModalOpen(true)}>
+                        <Cpu size={18} />
+                        <span>Nouvelle Agence</span>
+                    </button>
+                </div>
+            </header>
+
+            {/* KPI Cards Section */}
+            <div className="kpi-grid-modern">
+                <div className="kpi-card-modern blue">
+                    <div className="kpi-icon-modern">
+                        <Building2 size={20} />
+                    </div>
+                    <div className="kpi-content-modern">
+                        <span className="kpi-label-modern">Total Agences</span>
+                        <span className="kpi-value-modern">{stats.total}</span>
                     </div>
                 </div>
-
-                <div className="horizon-tactical-actions">
-                    <div className="hud-search-cluster">
-                        <div className="hud-input-group">
-                            <Search size={14} className="hud-icon" />
-                            <input
-                                type="text"
-                                placeholder="PROBE SYSTEM BY ID / NAME..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                        <PremiumSelect
-                            options={protocolOptions}
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            icon={ShieldAlert}
-                        />
+                <div className="kpi-card-modern green">
+                    <div className="kpi-icon-modern">
+                        <Zap size={20} />
                     </div>
+                    <div className="kpi-content-modern">
+                        <span className="kpi-label-modern">Agences Actives</span>
+                        {/* Fallback estimation if 'active' isn't in RPC, but usually it is or we relate to total */}
+                        <span className="kpi-value-modern">{agencies.filter(a => a.status === 'active').length} <span className="text-sm font-normal text-gray-400">/ page</span></span>
+                    </div>
+                </div>
+                <div className="kpi-card-modern orange">
+                    <div className="kpi-icon-modern">
+                        <Car size={20} />
+                    </div>
+                    <div className="kpi-content-modern">
+                        <span className="kpi-label-modern">Flotte Totale</span>
+                        <span className="kpi-value-modern">{stats.fleet}</span>
+                    </div>
+                </div>
+                <div className="kpi-card-modern purple">
+                    <div className="kpi-icon-modern">
+                        <Wallet size={20} />
+                    </div>
+                    <div className="kpi-content-modern">
+                        <span className="kpi-label-modern">Revenus Est.</span>
+                        <span className="kpi-value-modern">{(stats.revenue / 1000).toFixed(1)}k DH</span>
+                    </div>
+                </div>
+            </div>
 
-                    <button className="hud-btn-primary" onClick={() => setIsModalOpen(true)}>
-                        <Cpu size={16} />
-                        <span>INITIALIZE_NEW_PROTOCOL</span>
-                    </button>
+            {/* Toolbar */}
+            <div className="toolbar-section">
+                <div className="search-group">
+                    <Search size={16} />
+                    <input
+                        type="text"
+                        placeholder="Rechercher une agence..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <div style={{ width: '250px' }}>
+                    <PremiumSelect
+                        options={protocolOptions}
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        icon={ShieldAlert}
+                    />
                 </div>
             </div>
 
             <AddAgencyModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
                 onSuccess={handleAddSuccess}
             />
 
@@ -437,6 +538,9 @@ const AgenciesTab = () => {
                     setIsDetailOpen(false);
                     setDetailAgencyId(null);
                 }}
+                onEdit={(agencyData) => {
+                    handleEditClick(agencyData);
+                }}
             />
 
             {error && (
@@ -449,8 +553,8 @@ const AgenciesTab = () => {
             )}
 
             {loading ? (
-                <div className="enterprise-loading-shimmer">
-                    {[1, 2, 3].map(i => <div key={i} className="shimmer-card glass-panel" />)}
+                <div className="loading-skeleton">
+                    <LoadingSpinner />
                 </div>
             ) : agencies.length === 0 ? (
                 <EmptyState
@@ -460,15 +564,14 @@ const AgenciesTab = () => {
                         ? 'Aucune agence ne correspond à votre recherche.'
                         : 'Aucune agence n\'a encore été créée dans le système.'}
                     actionLabel="Créer une agence"
-                    onAction={() => setIsModalOpen(true)}
+                    onAction={() => setIsAddModalOpen(true)}
                 />
             ) : (
                 <>
-                    {/* Dual-Mode Display */}
-                    <div className="agencies-desktop-view">
+                    <div className="desktop-view-modern">
                         {renderDesktopTable()}
                     </div>
-                    <div className="agencies-mobile-view">
+                    <div className="mobile-view-modern">
                         {renderMobileCards()}
                     </div>
                     {renderPagination()}

@@ -332,7 +332,7 @@ const OverviewTab = () => {
                         <h3 className="section-title">Activités Récentes</h3>
                     </div>
                     <div className="activity-feed">
-                        {stats.activity.length === 0 ? (
+                        {(!stats.activity || stats.activity.length === 0) ? (
                             <div className="empty-feed">
                                 Aucune activité récente
                             </div>

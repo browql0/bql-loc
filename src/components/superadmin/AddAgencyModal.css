@@ -1,141 +1,124 @@
-/* Zen Aesthetics - Minimal & Clean */
-.modal-overlay-zen {
+/* AddAgencyModal.css - Synergized with History Modal Aesthetic */
+
+.modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(8px);
+    width: 100vw;
+    height: 100vh;
+    background: rgba(10, 15, 30, 0.6);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    z-index: 999999;
+    /* Maximum z-index to cover everything including sidebar and header */
     padding: 20px;
-    z-index: 9999;
-    animation: fadeOverlay 0.3s ease-out;
+    animation: fadeInZen 0.25s ease-out;
+    /* Ensure it covers the entire viewport */
+    margin: 0;
+    box-sizing: border-box;
 }
 
-.modal-card-zen {
-    background: #ffffff;
-    width: 500px;
+.modal-content-premium {
+    background: #FFFFFF;
+    width: 520px;
     max-width: 95vw;
-    border-radius: 32px;
-    box-shadow:
-        0 20px 60px -10px rgba(0, 0, 0, 0.1),
-        0 10px 20px -5px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    overflow: hidden;
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     display: flex;
     flex-direction: column;
     max-height: 90vh;
+    animation: slideUpZen 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 1);
+    overflow: hidden;
 }
 
-/* Header */
-.modal-header-zen {
-    padding: 1.5rem 2rem;
+.modal-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 1rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #F1F5F9;
+    background: #FFFFFF;
 }
 
-.header-icon-zen {
-    width: 42px;
-    height: 42px;
-    background: #000;
-    color: #fff;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.header-text-zen h2 {
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: #000;
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0F172A;
     margin: 0;
-    letter-spacing: -0.02em;
 }
 
-.header-text-zen p {
-    font-size: 0.8rem;
-    color: #888;
-    margin: 0.1rem 0 0 0;
-    font-weight: 500;
-}
-
-.close-btn-zen {
-    margin-left: auto;
-    background: white;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
+.close-btn {
+    background: transparent;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    color: #64748B;
+    cursor: pointer;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    color: #666;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
 }
 
-.close-btn-zen:hover {
-    background: #000;
-    border-color: #000;
-    color: #fff;
-    transform: rotate(90deg) scale(1.1);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+.close-btn:hover {
+    background: #F1F5F9;
+    color: #0F172A;
 }
 
-/* Form Content */
-.form-zen {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-.scroll-content-zen {
-    padding: 2rem;
+.modal-body-scroll {
+    padding: 1.5rem;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 20px;
 }
 
-/* Inputs with "Surgical" Feel */
+.modal-body-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body-scroll::-webkit-scrollbar-thumb {
+    background: #E2E8F0;
+    border-radius: 10px;
+}
+
+/* Form Elements */
 .input-group-zen {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    position: relative;
+    gap: 8px;
 }
 
 .input-group-zen label {
     font-size: 0.75rem;
     font-weight: 700;
-    color: #666;
+    color: #64748B;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    padding-left: 0.5rem;
+    padding-left: 2px;
 }
 
 .input-wrapper-zen {
     position: relative;
     display: flex;
     align-items: center;
-    background: #fcfcfc;
-    border: 1px solid #eee;
-    border-radius: 16px;
-    height: 52px;
-    padding: 0 1rem;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    background: #F8FAFC;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 12px;
+    height: 50px;
+    padding: 0 16px;
+    transition: all 0.2s ease;
 }
 
 .input-icon-zen {
-    color: #999;
-    margin-right: 0.75rem;
-    transition: color 0.3s;
+    color: #94A3B8;
+    margin-right: 12px;
+    flex-shrink: 0;
 }
 
 .input-wrapper-zen input {
@@ -144,163 +127,216 @@
     width: 100%;
     height: 100%;
     font-size: 0.95rem;
-    color: #000;
+    color: #0F172A;
     font-weight: 500;
     outline: none;
 }
 
 .input-wrapper-zen:focus-within {
-    background: #fff;
-    border-color: #000;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    transform: translateY(-1px);
+    background: #FFFFFF;
+    border-color: #2563EB;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
 }
 
-.input-wrapper-zen:focus-within .input-icon-zen {
-    color: #000;
-}
-
+/* Password Toggle */
 .pwd-toggle-zen {
     background: none;
     border: none;
     cursor: pointer;
-    color: #999;
+    color: #94A3B8;
     display: flex;
     align-items: center;
     padding: 4px;
-    transition: color 0.2s;
 }
 
 .pwd-toggle-zen:hover {
-    color: #000;
+    color: #0F172A;
+}
+
+/* Separator */
+.separator-line {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 8px 0;
+}
+
+.separator-line::before,
+.separator-line::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #F1F5F9;
+}
+
+.separator-line span {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
 }
 
 .row-zen {
     display: flex;
-    gap: 1rem;
+    gap: 16px;
 }
 
 .row-zen>div {
     flex: 1;
 }
 
-.separator-zen {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin: 0.5rem 0;
-}
-
-.separator-zen::before,
-.separator-zen::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: #f0f0f0;
-}
-
-.separator-zen span {
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: #bbb;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-}
-
 /* Footer */
-.footer-zen {
-    padding: 1.5rem 2rem;
-    background: #fff;
-    border-top: 1px solid #f5f5f5;
+.modal-footer-zen {
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid #F1F5F9;
     display: flex;
     justify-content: flex-end;
-    gap: 1rem;
+    gap: 12px;
+    background: #FFFFFF;
 }
 
 .btn-cancel-zen {
-    background: transparent;
-    border: none;
-    color: #666;
-    font-weight: 600;
-    cursor: pointer;
-    padding: 0.8rem 1.5rem;
+    padding: 0.75rem 1.5rem;
+    background: #FFFFFF;
+    border: 1.5px solid #E2E8F0;
     border-radius: 12px;
+    color: #64748B;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
     transition: all 0.2s;
 }
 
 .btn-cancel-zen:hover {
-    background: #f5f5f5;
-    color: #000;
+    background: #F8FAFC;
+    color: #0F172A;
 }
 
-.btn-submit-zen {
-    background: #000;
-    color: #fff;
+.btn-submit-premium {
+    padding: 0.75rem 1.5rem;
+    background: #0F172A;
     border: none;
-    padding: 0.8rem 2rem;
-    border-radius: 14px;
+    border-radius: 12px;
+    color: #FFFFFF;
     font-weight: 700;
+    font-size: 0.9rem;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    gap: 10px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
 }
 
-.btn-submit-zen:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+.btn-submit-premium:hover:not(:disabled) {
+    background: #1E293B;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.2);
 }
 
-.btn-submit-zen:disabled {
-    opacity: 0.7;
+.btn-submit-premium:disabled {
+    opacity: 0.6;
     cursor: not-allowed;
-    transform: none;
+}
+
+.btn-submit-premium.btn-success {
+    background: #10B981;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.success-pulse {
+    animation: successPulse 1.5s ease-out;
+}
+
+@keyframes successPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 20px rgba(16, 185, 129, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
+.animate-bounce {
+    animation: bounce 0.5s infinite;
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+/* Field Errors */
+.field-error {
+    font-size: 0.75rem;
+    color: #EF4444;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+.input-group-zen.has-error .input-wrapper-zen {
+    border-color: #EF4444;
+    background: rgba(239, 68, 68, 0.05);
 }
 
 /* Animations */
-@keyframes fadeOverlay {
+@keyframes fadeInZen {
     from {
         opacity: 0;
     }
 
     to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUpZen {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
         opacity: 1;
     }
 }
 
 .animate-scale-up {
-    animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: slideUpZen 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes scaleUp {
-    from {
-        opacity: 0;
-        transform: scale(0.95) translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-.loader-dot {
-    width: 6px;
-    height: 6px;
-    background: #fff;
-    border-radius: 50%;
-    animation: pulse 1s infinite;
-}
-
+/* Mobile Adjustments */
 @media (max-width: 600px) {
+    .modal-content-premium {
+        border-radius: 20px;
+    }
+
     .row-zen {
         flex-direction: column;
-        gap: 1.25rem;
     }
 
-    .scroll-content-zen {
-        padding: 1.5rem;
+    .modal-footer-zen {
+        flex-direction: column-reverse;
+    }
+
+    .btn-submit-premium,
+    .btn-cancel-zen {
+        width: 100%;
+        justify-content: center;
     }
 }

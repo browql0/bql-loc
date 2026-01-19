@@ -24,7 +24,7 @@ import {
     ChevronRight
 } from 'lucide-react';
 import SettingsConfirmModal from './SettingsConfirmModal';
-import './Settings.css';
+import './settings.css';
 
 const Settings = () => {
     // State Management

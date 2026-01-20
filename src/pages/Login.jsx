@@ -2,20 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
-    Mail, Lock, ArrowRight, ArrowLeft,
-    Command, Zap, X, LayoutDashboard,
-    FileText, Activity, Shield
+    Mail, Lock, ArrowRight, Command, Zap,
+    Activity, LayoutDashboard, X, Eye, EyeOff
 } from 'lucide-react';
 import './Login.css';
 
 const Login = () => {
     const navigate = useNavigate();
-
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
-        password: ''
+        password: '',
+        rememberMe: false
     });
 
     useEffect(() => {
@@ -24,34 +24,32 @@ const Login = () => {
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData({
-            ...formData,
+        setFormData(prev => ({
+            ...prev,
             [name]: type === 'checkbox' ? checked : value
-        });
+        }));
+
+        // Clear error when user starts typing
+        if (error) setError(null);
     };
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        
+
         if (loading) return; // Prevent double submission
-        
+
         setLoading(true);
         setError(null);
 
         try {
-            // Validate email format
-            if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-                setError('Email invalide');
-                setLoading(false);
-                return;
-            }
+            const emailTrimmed = formData.email.trim();
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: formData.email.trim(),
+            const { data, error: authError } = await supabase.auth.signInWithPassword({
+                email: emailTrimmed,
                 password: formData.password,
             });
 
-            if (error) throw error;
+            if (authError) throw authError;
 
             // Role-based redirection
             let role = data.user?.user_metadata?.role;
@@ -75,60 +73,46 @@ const Login = () => {
                 return;
             }
 
-            if (role === 'owner') {
-                navigate('/owner/dashboard');
-            } else if (role === 'superadmin') {
-                navigate('/superadmin/dashboard');
-            } else if (role === 'staff') {
-                navigate('/staff/dashboard');
-            } else {
-                // Unknown role, redirect to pending approval
-                navigate('/pending-approval');
+            // Redirect based on role
+            switch (role) {
+                case 'owner':
+                    navigate('/owner/dashboard');
+                    break;
+                case 'superadmin':
+                    navigate('/superadmin/dashboard');
+                    break;
+                case 'staff':
+                    navigate('/staff/dashboard');
+                    break;
+                default:
+                    navigate('/pending-approval');
             }
 
         } catch (err) {
-            const errorMessage = err.message || 'Erreur de connexion. Vérifiez vos identifiants.';
+            // User-friendly error messages
+            let errorMessage = 'Erreur de connexion. Vérifiez vos identifiants.';
+            if (err.message?.includes('Invalid login credentials')) {
+                errorMessage = 'Email ou mot de passe incorrect';
+            } else if (err.message?.includes('Email not confirmed')) {
+                errorMessage = 'Veuillez confirmer votre email avant de vous connecter';
+            }
             setError(errorMessage);
-            // Don't use alert, error is already shown in UI
         } finally {
             setLoading(false);
         }
     };
 
-    const handleNavigateToRegister = (e) => {
-        e.preventDefault();
-        navigate('/register');
-    };
-
-    // Temporary helper to create superadmin
-    const createSuperAdmin = async () => {
-        const email = prompt("Enter Superadmin Email:");
-        const password = prompt("Enter Superadmin Password:");
-        if (!email || !password) return;
-
-        try {
-            const { data, error } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: {
-                        role: 'superadmin',
-                        full_name: 'Super Admin'
-                    }
-                }
-            });
-            if (error) throw error;
-            alert('Superadmin created! Check your email to confirm if confirmation is enabled.');
-        } catch (err) {
-            alert('Error: ' + err.message);
-        }
-    };
-
     return (
-        <div className="register-page-v74 login-portal-ui mode-light">
+        <div className="login-page-premium">
+            {/* Error Notification */}
+            {error && (
+                <div className="error-notification" role="alert" aria-live="assertive">
+                    <X size={20} />
+                    <span>{error}</span>
+                </div>
+            )}
 
-
-            {/* Site Atmosphere Alignment */}
+            {/* Site Atmosphere */}
             <div className="site-aura">
                 <div className="aura-orb orb-indigo"></div>
                 <div className="aura-orb orb-rose"></div>
@@ -136,8 +120,8 @@ const Login = () => {
             </div>
 
             <div className="layout-portal">
-                <div className="ultimate-card theme-light">
-                    {/* Visual Side: The Obsidian Vault */}
+                <div className="ultimate-card">
+                    {/* Vault Side (Dark Side) */}
                     <div className="vault-side">
                         <div className="vault-header">
                             <div className="portal-logo" onClick={() => navigate('/')}>
@@ -149,124 +133,139 @@ const Login = () => {
                         <div className="vault-content">
                             <div className="v-tag animate-fade-in">
                                 <Zap size={12} />
-                                <span style={{ color: 'rgba(255,255,255,0.7)' }}>ACCÈS AGENT CERTIFIÉ</span>
+                                <span>ACCÈS AGENTS CERTIFIÉS</span>
                             </div>
 
                             <h1 className="v-main-title animate-title">
-                                Pilotez votre <br />
-                                propre <span>empire.</span>
+                                Connectez-vous à<br />
+                                votre <span>tableau de bord.</span>
                             </h1>
 
                             <p className="v-description animate-fade-in">
-                                Retrouvez votre écosystème de gestion de flotte et vos indicateurs de performance.
+                                Accédez à votre espace de gestion et pilotez votre flotte en temps réel avec des outils professionnels.
                             </p>
 
                             <div className="v-perk-list">
                                 <div className="perk-item animate-perk" style={{ animationDelay: '0.4s' }}>
-                                    <div className="perk-icon-wrap"><Shield size={18} /></div>
+                                    <div className="perk-icon-wrap"><Activity size={18} /></div>
                                     <div className="perk-text">
-                                        <strong>Session Sécurisée</strong>
-                                        <span>Tous vos données sont sécurisées.</span>
+                                        <strong>Gestion en Temps Réel</strong>
+                                        <span>Suivez l'état de votre flotte instantanément.</span>
                                     </div>
                                 </div>
                                 <div className="perk-item animate-perk" style={{ animationDelay: '0.6s' }}>
                                     <div className="perk-icon-wrap"><LayoutDashboard size={18} /></div>
                                     <div className="perk-text">
-                                        <strong>Live Dashboard</strong>
-                                        <span>Données synchronisées en temps réel.</span>
+                                        <strong>Analytics Avancés</strong>
+                                        <span>Tableaux de bord et rapports détaillés.</span>
                                     </div>
                                 </div>
                                 <div className="perk-item animate-perk" style={{ animationDelay: '0.8s' }}>
-                                    <div className="perk-icon-wrap"><FileText size={18} /></div>
+                                    <div className="perk-icon-wrap"><Lock size={18} /></div>
                                     <div className="perk-text">
-                                        <strong>Documents Centralisés</strong>
-                                        <span>Tous vos contrats à portée de main.</span>
+                                        <strong>Sécurité Maximale</strong>
+                                        <span>Protection des données sensibles.</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-
-
+                        {/* Immersive mesh light effect */}
                         <div className="mesh-gradient"></div>
                     </div>
 
-                    {/* Form Side: The Pearl Studio */}
+                    {/* Studio Side (Form Side) */}
                     <div className="studio-side">
-                        {/* Mobile Brand Header (Visible only on mobile) */}
+                        {/* Mobile Brand Header */}
                         <div className="mobile-brand-header">
                             <div className="logo-box-mobile"><Command size={18} /></div>
                             <span>BQL RENT SYSTEMS</span>
                         </div>
 
-                        <div className="studio-header">
-                            <div className="f-progress">
-                                <span className="p-bar"></span>
-                                <span className="p-bar active"></span>
+                        <div className="login-content-center-wrapper">
+                            <div className="studio-header">
+                                <div className="f-progress">
+                                    <span className="p-bar"></span>
+                                    <span className="p-bar active"></span>
+                                </div>
+                                <h2 className="f-main-title">Connexion Sécurisée</h2>
+                                <p className="f-main-subtitle">Identifiez-vous avec vos identifiants</p>
                             </div>
-                            <h2 className="f-main-title">Identification</h2>
-                            <p className="f-main-subtitle">Entrez vos accès pour ouvrir le portail</p>
+
+                            <form className="studio-form" onSubmit={handleLogin}>
+                                <div className="s-field-group">
+                                    <label htmlFor="email-input">ADRESSE EMAIL</label>
+                                    <div className="s-input-wrap">
+                                        <Mail size={18} className="s-icon" />
+                                        <input
+                                            id="email-input"
+                                            type="email"
+                                            name="email"
+                                            placeholder="votre@email.com"
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            required
+                                            autoComplete="email"
+                                        />
+                                        <div className="s-glow"></div>
+                                    </div>
+                                </div>
+
+                                <div className="s-field-group">
+                                    <label htmlFor="password-input">MOT DE PASSE</label>
+                                    <div className="s-input-wrap password-wrap">
+                                        <Lock size={18} className="s-icon" />
+                                        <input
+                                            id="password-input"
+                                            type={showPassword ? 'text' : 'password'}
+                                            name="password"
+                                            placeholder="••••••••••••"
+                                            value={formData.password}
+                                            onChange={handleChange}
+                                            required
+                                            autoComplete="current-password"
+                                        />
+                                        <button
+                                            type="button"
+                                            className="password-toggle-btn"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                                        >
+                                            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                        </button>
+                                        <div className="s-glow"></div>
+                                    </div>
+                                </div>
+
+                                {/* Remember Me Checkbox */}
+                                <div className="terms-checkbox-wrapper">
+                                    <label className="terms-label">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.rememberMe || false}
+                                            onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
+                                        />
+                                        <span className="checkmark">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        </span>
+                                        <span className="terms-text">Se souvenir de moi</span>
+                                    </label>
+                                </div>
+
+                                <button type="submit" className="s-submit-btn" disabled={loading}>
+                                    <span>{loading ? 'CONNEXION EN COURS...' : 'SE CONNECTER'}</span>
+                                    {!loading && <ArrowRight size={20} className="s-arrow" />}
+                                </button>
+                            </form>
+
+                            <div className="studio-footer">
+                                <p>PAS ENCORE DE COMPTE ? <a href="#" onClick={(e) => { e.preventDefault(); navigate('/register'); }}>S'INSCRIRE</a></p>
+                            </div>
                         </div>
 
-                        <form className="studio-form" onSubmit={handleLogin}>
-                            <div className="s-field-group">
-                                <label>VOTRE EMAIL</label>
-                                <div className="s-input-wrap">
-                                    <Mail size={18} className="s-icon" />
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        placeholder="direction@votre-agence.com"
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                    <div className="s-glow"></div>
-                                </div>
-                            </div>
-
-                            <div className="s-field-group">
-                                <div className="label-row">
-                                    <label>MOT DE PASSE</label>
-                                    <a href="#" className="f-forgot">Oublié ?</a>
-                                </div>
-                                <div className="s-input-wrap">
-                                    <Lock size={18} className="s-icon" />
-                                    <input
-                                        type="password"
-                                        name="password"
-                                        placeholder="••••••••••••"
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                    <div className="s-glow"></div>
-                                </div>
-                            </div>
-
-                            <div className="s-options-row">
-                                <label className="s-checkbox-container">
-                                    <input
-                                        type="checkbox"
-                                        name="rememberMe"
-                                        checked={formData.rememberMe}
-                                        onChange={handleChange}
-                                    />
-                                    <span className="s-checkmark"></span>
-                                    <span className="s-checkbox-label">Rester connecté</span>
-                                </label>
-                            </div>
-
-                            <button type="submit" className="s-submit-btn" disabled={loading}>
-                                <span>{loading ? 'CONNEXION...' : 'OUVRIR LA SESSION'}</span>
-                                {!loading && <ArrowRight size={20} className="s-arrow" />}
-                            </button>
-                        </form>
-
-                        <div className="studio-footer">
-                            <p>PAS ENCORE D'ESPACE ? <a href="#" onClick={handleNavigateToRegister}>CRÉER UN COMPTE</a></p>
-                        </div>
-
+                        {/* Floating close button */}
                         <button className="s-close-btn" onClick={() => navigate('/')}>
                             <X size={20} />
                         </button>
@@ -277,6 +276,4 @@ const Login = () => {
     );
 };
 
-
 export default Login;
-

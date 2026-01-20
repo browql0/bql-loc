@@ -5,7 +5,8 @@ import { supabase } from '../lib/supabase';
 import {
     User, Mail, Building2, Lock, ArrowRight, ArrowLeft,
     Command, Zap, Shield, Sparkles, X, LayoutDashboard,
-    FileText, Activity, Phone, ChevronDown, Search
+    FileText, Activity, Phone, ChevronDown, Search,
+    Eye, EyeOff
 } from 'lucide-react';
 import './Register.css';
 import './PhoneInput.css';
@@ -21,6 +22,7 @@ const Register = () => {
     const [prefixSearch, setPrefixSearch] = useState('');
     const [phoneError, setPhoneError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -86,9 +88,9 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (isSubmitting) return; // Prevent double submission
-        
+
         setNotification(null);
 
         // Validate phone
@@ -300,7 +302,7 @@ const Register = () => {
                                     <input
                                         type="text"
                                         name="name"
-                                        placeholder="Ex: Marc Aurèle"
+                                        placeholder="Identité complète..."
                                         value={formData.name}
                                         onChange={handleChange}
                                         required
@@ -316,7 +318,7 @@ const Register = () => {
                                     <input
                                         type="email"
                                         name="email"
-                                        placeholder="direction@votre-agence.com"
+                                        placeholder="Email professionnel..."
                                         value={formData.email}
                                         onChange={handleChange}
                                         required
@@ -332,7 +334,7 @@ const Register = () => {
                                     <input
                                         type="text"
                                         name="agencyName"
-                                        placeholder="Ex: Luxury Rent Paris"
+                                        placeholder="Raison sociale..."
                                         value={formData.agencyName}
                                         onChange={handleChange}
                                         required
@@ -388,7 +390,7 @@ const Register = () => {
                                         <Phone size={18} className="s-icon" />
                                         <input
                                             type="tel"
-                                            placeholder="0612345678"
+                                            placeholder="Numéro de mobile..."
                                             value={phoneNumber}
                                             onChange={handlePhoneChange}
                                             required
@@ -401,18 +403,44 @@ const Register = () => {
 
                             <div className="s-field-group">
                                 <label>MOT DE PASSE MAÎTRE</label>
-                                <div className="s-input-wrap">
+                                <div className="s-input-wrap password-wrap">
                                     <Lock size={18} className="s-icon" />
                                     <input
-                                        type="password"
+                                        type={showPassword ? 'text' : 'password'}
                                         name="password"
                                         placeholder="••••••••••••"
                                         value={formData.password}
                                         onChange={handleChange}
                                         required
                                     />
+                                    <button
+                                        type="button"
+                                        className="password-toggle-btn"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        aria-label={showPassword ? 'Masquer' : 'Afficher'}
+                                    >
+                                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    </button>
                                     <div className="s-glow"></div>
                                 </div>
+                            </div>
+
+                            {/* Terms Checkbox */}
+                            <div className="terms-checkbox-wrapper">
+                                <label className="terms-label">
+                                    <input
+                                        type="checkbox"
+                                        required
+                                        checked={formData.termsAccepted || false}
+                                        onChange={(e) => setFormData({ ...formData, termsAccepted: e.target.checked })}
+                                    />
+                                    <span className="checkmark">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </span>
+                                    <span className="terms-text">J'accepte les <a href="#">Conditions Générales</a></span>
+                                </label>
                             </div>
 
                             <button type="submit" className="s-submit-btn" disabled={isSubmitting}>

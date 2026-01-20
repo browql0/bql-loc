@@ -1,56 +1,98 @@
 import React from 'react';
-import { CheckCircle, Target, Zap } from 'lucide-react';
+import { ShieldCheck, Users, TrendingUp, Zap } from 'lucide-react';
 import './About.css';
 
 const About = () => {
     return (
         <section className="about-section" id="about">
-            <div className="about-container">
-                <div className="about-content">
-                    <div className="about-text">
-                        <h2 className="section-title">À Propos de BQL Rent</h2>
-                        <p className="about-intro">
-                            Nous sommes la solution de gestion moderne conçue spécifiquement pour les agences de location de voiture.
-                            Notre mission est de simplifier vos opérations et taches quotidiennes et d'accélérer votre croissance.
-                        </p>
+            <div className="about-background-effects">
+                <div className="about-glow"></div>
+            </div>
 
-                        <div className="about-features">
-                            <div className="about-feature">
-                                <CheckCircle size={24} />
-                                <div>
-                                    <h4>Simplicité</h4>
-                                    <p>Interface intuitive, prise en main immédiate</p>
+            <div className="about-container">
+                <header className="about-header">
+                    <span className="services-badge">L'Excellence Opérationnelle</span>
+                    <h2 className="services-title-custom">Votre Partenaire Stratégique</h2>
+                </header>
+
+                <div className="about-grid">
+                    <div className="about-info-col">
+                        <div className="info-block">
+                            <h3 className="block-label">Qui sommes-nous ?</h3>
+                            <p className="block-text">
+                                BQL Rent est née d'une vision : simplifier la complexité logistique des agences de location.
+                                Nous fusionnons innovation technologique et expertise métier pour offrir une plateforme
+                                d'élite, conçue pour durer.
+                            </p>
+                        </div>
+
+                        <div className="info-block">
+                            <h3 className="block-label">Pourquoi nous ?</h3>
+                            <p className="block-text">
+                                Propulser votre agence vers de nouveaux sommets d'efficacité. Nous éliminons les frictions
+                                opérationnelles pour que votre seule priorité reste la satisfaction de vos clients.
+                            </p>
+                        </div>
+
+                        <div className="values-stack">
+                            <div className="value-mini-card">
+                                <div className="value-icon-box">
+                                    <ShieldCheck size={18} />
+                                </div>
+                                <div className="value-text-box">
+                                    <h4>Sécurité Native</h4>
+                                    <p>Protection de niveau bancaire pour vos données.</p>
                                 </div>
                             </div>
-                            <div className="about-feature">
-                                <Target size={24} />
-                                <div>
-                                    <h4>Performance</h4>
-                                    <p>Optimisez vos opérations et augmentez vos revenus</p>
+                            <div className="value-mini-card">
+                                <div className="value-icon-box">
+                                    <Users size={18} />
                                 </div>
-                            </div>
-                            <div className="about-feature">
-                                <Zap size={24} />
-                                <div>
-                                    <h4>Innovation</h4>
-                                    <p>Technologies de pointe au service de votre agence</p>
+                                <div className="value-text-box">
+                                    <h4>Design Collaboratif</h4>
+                                    <p>Fluidité optimale entre vos équipes.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="about-stats">
-                        <div className="about-stat-card">
-                            <div className="stat-value">7+</div>
-                            <div className="stat-label">Années d'expérience</div>
-                        </div>
-                        <div className="about-stat-card">
-                            <div className="stat-value">10+</div>
-                            <div className="stat-label">Agences partenaires</div>
-                        </div>
-                        <div className="about-stat-card">
-                            <div className="stat-value">24/7</div>
-                            <div className="stat-label">Support disponible</div>
+                    <div className="about-stats-col">
+                        <div className="stats-glass-grid">
+                            <div className="stat-glass-card">
+                                <div className="stat-card-inner">
+                                    <div className="stat-icon-row">
+                                        <TrendingUp size={20} className="stat-accent-icon" />
+                                        <span className="stat-percentage">+30%</span>
+                                    </div>
+                                    <h4 className="stat-name">Productivité</h4>
+                                    <p className="stat-subtext">Gain moyen constaté</p>
+                                </div>
+                            </div>
+
+                            <div className="stat-glass-card">
+                                <div className="stat-card-inner">
+                                    <div className="stat-icon-row">
+                                        <Zap size={20} className="stat-accent-icon" />
+                                        <span className="stat-percentage">24/7</span>
+                                    </div>
+                                    <h4 className="stat-name">Support VIP</h4>
+                                    <p className="stat-subtext">Accompagnement expert</p>
+                                </div>
+                            </div>
+
+                            <div className="stat-glass-card primary-theme">
+                                <div className="stat-card-inner">
+                                    <h4 className="stat-name">100% Cloud</h4>
+                                    <p className="stat-subtext">Accès universel sécurisé</p>
+                                </div>
+                            </div>
+
+                            <div className="stat-glass-card outline-theme">
+                                <div className="stat-card-inner">
+                                    <h4 className="stat-name">Zéro Surprise</h4>
+                                    <p className="stat-subtext">Tarification transparente</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
